@@ -50,23 +50,23 @@
 %                              any year between 1900 and 2100
 
 % kepler_E.m                -> Newton's method to solve Kepler's equation  
-%                              E - e*sin(E) = M for the eccentric anomaly
+%                              for the eccentric anomaly
 
 % kepler_H.m                -> Newton's method to solve Kepler's equation  
-%                              E - e*sin(E) = M for the hyperbolic eccentric anomaly
+%                              for the hyperbolic eccentric anomaly
 
 % kepler_U.m                -> Newton's method to solve the universal 
 %                              Kepler equation for the universal anomaly
 
 % lambert.m                 -> Solves Lambert's problem
 
-% los.m                     -> Determine whether the earth is in the los 
-%                              between the satellite and the sun
+% los.m                     -> Determine whether the Earth is in the los 
+%                              between the satellite and the Sun
 
 % LST.m                     -> Calculates the local sidereal time
 
 % lunar_position.m          -> Calculates the geocentric equatorial 
-%                              position vector of the moon given the Julian
+%                              position vector of the Moon given the Julian
 %                              day
 
 % month_planet_names.m      -> Returns the name of the month and the planet
@@ -102,7 +102,7 @@
 %                              of B relative to A in the LVLH frame on A
 
 % solar_position.m          -> Calculates the geocentric equatorial 
-%                              position vector of the sun, given the julian
+%                              position vector of the Sun, given the julian
 %                              date
 
 % stumpS.m                  -> Evaluates the Stumpff function S(z)

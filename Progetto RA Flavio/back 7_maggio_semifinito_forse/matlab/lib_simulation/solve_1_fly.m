@@ -57,7 +57,8 @@
     
     u = (6.67e-11*1.9891e30)*1e-9;
     
-    [v1, v2, extremal_distances, exitflag] = lambert(r1', r2', t_target-t1, 0, u);
+%     [v1, v2, extremal_distances, exitflag] = lambert(r1', r2', t_target-t1,% 0, u);
+    [v1, v2] = lambert(r1', r2', t_target-t1,'pro');
     v1 = v1';
     v2 = v2';
     %[a,eMag,i,O,o,nu,truLon,argLat,lonPer,p] = rv2orb(ra,va,terra.u_sol);
