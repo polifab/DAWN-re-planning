@@ -76,7 +76,7 @@ Park_T = 2*pi*parkingOrbit^(3/2)/sqrt(Earth_mu);
 
 %Time between two positions:
 %   t = phi/(2*pi)*Park_T;
-t_toEarthPerigee = deg2rad(angle_toPerigee)/(2*pi)*Park_T; %[s]
+% t_toEarthPerigee = deg2rad(angle_toPerigee)/(2*pi)*Park_T; %[s]
 
 %% For testing purposes
 figure(1)
@@ -162,3 +162,10 @@ plot3(Mars_r0(1),Mars_r0(2),Mars_r0(3),'ro')
 
 plot3([Earth_focus(1),Earth_r(1)],[Earth_focus(2),Earth_r(2)],[Earth_focus(3),Earth_r(3)],'b-+')
 plot3([Mars_focus(1),Mars_r(1)],[Mars_focus(2),Mars_r(2)],[Mars_focus(3),Mars_r(3)],'r-+')
+
+%% Lambert attempt
+part = datevec(datenum(2007,12,18));
+arr = datevec(datenum(2009,2,17));
+diff = etime(arr,part);
+E = planet_elements_and_sv(3,2007,12,18,0,0,0);
+M = planet_elements_and_sv(4,2009,2,27,0,0,0);

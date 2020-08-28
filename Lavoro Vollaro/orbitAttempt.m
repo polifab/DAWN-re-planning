@@ -1,5 +1,5 @@
-function orbit
-% ORBIT computes the orbit of a spacecraft by using rkf45 to 
+function orbitAttempt
+%   computes the orbit of a spacecraft by using rkf45 to 
 %   numerically integrate Equation 2.22.
 % 
 %   It also plots the orbit and computes the times at which the maximum
@@ -39,21 +39,22 @@ function orbit
     hours = 3600;
     G     = 6.6742e-20;
 
-    %...Input data:
-    %   Earth:
-    m1 = 5.974e24;
-    R  = 6378;
+    %% Input data:
+    %m1: Sun
+    m1 = 1988500e24;
+    R  = 696.340;
+    %m2: Spacecraft
     m2 = 1000;
 
-    r0 = [8000 0 6000];
-    v0 = [0 7 0];
+    r0 = [1.4960e+08, 1.0403e+07, -181.1068];
+    v0 = [-30.1843, 2.1960, -0.0000];
+    %v0 = [-8.1805, 32.5673, 1.0630]; %from Earth_Mars.m
 
     t0 = 0;
-    tf = 4*hours;
-    %...End input data
+    %tf obtained as tof from Earth_Mars.m
+    tf = 509*24*hours;
 
-
-    %...Numerical integration:
+    %% Numerical integration:
     mu    = G*(m1 + m2);
     y0    = [r0 v0]';
     [t,y] = rkf45(@rates, [t0 tf], y0);
@@ -127,8 +128,8 @@ function orbit
 
         %...Output to the command window:
         fprintf('\n\n--------------------------------------------------------\n')
-        fprintf('\n Earth Orbit\n')
-        fprintf(' %s\n', datestr(now))
+        fprintf('\n Spacecraft Orbit\n')
+        fprintf(' %s\n', datestr([2007,9,27,0,0,0]))
         fprintf('\n The initial position is [%g, %g, %g] (km).',...
                                                              r0(1), r0(2), r0(3))
         fprintf('\n   Magnitude = %g km\n', norm(r0))
@@ -146,7 +147,6 @@ function orbit
 
         %...Plot the results:
         %   Draw the planet
-        
         [xx, yy, zz] = sphere(100);
         surf(R*xx, R*yy, R*zz)
         colormap(light_gray)
@@ -171,7 +171,7 @@ function orbit
 
         %   Specify some properties of the graph
         grid on
-        axis equal
+%         axis equal
         xlabel('km')
         ylabel('km')
         zlabel('km')

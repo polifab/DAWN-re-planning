@@ -1,4 +1,4 @@
-function orbit
+function Earth_park
 % ORBIT computes the orbit of a spacecraft by using rkf45 to 
 %   numerically integrate Equation 2.22.
 % 
@@ -44,17 +44,18 @@ function orbit
     m1 = 5.974e24;
     R  = 6378;
     m2 = 1000;
-
-    r0 = [8000 0 6000];
-    v0 = [0 7 0];
+    mu    = G*(m1 + m2);
+    r0 = [R+200, 0, 0];
+    Park_v0 = sqrt(mu/r0(1)); %km/s
+    v0 = [0, Park_v0, 0];
 
     t0 = 0;
-    tf = 4*hours;
+    tf = 100*hours;%1.5*hours;
     %...End input data
 
 
     %...Numerical integration:
-    mu    = G*(m1 + m2);
+    
     y0    = [r0 v0]';
     [t,y] = rkf45(@rates, [t0 tf], y0);
 
@@ -146,12 +147,17 @@ function orbit
 
         %...Plot the results:
         %   Draw the planet
-        
+        load('topo.mat','topo','topomap1')
+        topo2 = [topo(:,181:360) topo(:,1:180)]; %#ok<NODEF>
+        props.FaceColor= 'texture';
+        props.EdgeColor = 'none';
+        props.FaceLighting = 'phong';
+        props.Cdata = topo2;
+
+        % Create the sphere with Earth topography and adjust colormap
         [xx, yy, zz] = sphere(100);
-        surf(R*xx, R*yy, R*zz)
-        colormap(light_gray)
-        caxis([-R/100 R/100])
-        shading interp
+        surface(R*xx,R*yy,R*zz,props)
+        colormap(topomap1);
 
         %   Draw and label the X, Y and Z axes
         line([0 2*R],   [0 0],   [0 0]); text(2*R,   0,   0, 'X')
@@ -161,7 +167,7 @@ function orbit
         %   Plot the orbit, draw a radial to the starting point
         %   and label the starting point (o) and the final point (f)
         hold on
-        plot3(  y(:,1),    y(:,2),    y(:,3),'k')
+        plot3(  y(:,1),    y(:,2),    y(:,3),'r','LineWidth',1)
         line([0 r0(1)], [0 r0(2)], [0 r0(3)])
         text(   y(1,1),    y(1,2),    y(1,3), 'o')
         text( y(end,1),  y(end,2),  y(end,3), 'f')
