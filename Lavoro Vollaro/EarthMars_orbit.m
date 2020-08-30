@@ -1,6 +1,4 @@
-%{
-  This program uses Algorithm 8.2 to solve Example 8.8.
- 
+%{ 
   mu           - gravitational parameter of the sun (km^3/s^2)
   deg          - conversion factor between degrees and radians
   pi           - 3.1415926...
@@ -59,7 +57,6 @@
   User M-functions required: interplanetary, coe_from_sv,
                              month_planet_names
 %}
-% ---------------------------------------------
 
 clear all
 clc

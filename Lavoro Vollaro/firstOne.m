@@ -1,3 +1,9 @@
+%%                      WARNING
+%       Collection of all code used so far:
+%       some of it is purposeless, some is garbage!
+
+
+
 %% Data
 
 %Some of these can be derived from planet_elements_and_sv
@@ -50,14 +56,12 @@ Park_v0 = sqrt(Earth_mu/Park_r0(1)); %km/s
 [Park_ra, Park_dec] = ra_and_dec_from_r(Park_r0);
 
 %Earth elements and sv in the eliocentric system
-%DATE TO BE CHANGED AS NEEDED
 % with respect to the sun
-[Earth_coe0, Earth_r0, Earth_v0, Earth_julianday] = planet_elements_and_sv(3,2007,9,27,12,0,0);
+[Earth_coe0, Earth_r0, Earth_v0, Earth_julianday] = planet_elements_and_sv(3,2007,9,27,0,0,0);
 
 %Mars elements and sv in the eliocentric system
-%DATE TO BE CHANGED AS NEEDED
 % with respect to the sun
-[Mars_coe0, Mars_r0, Mars_v0, Mars_julianday] = planet_elements_and_sv(4,2007,9,27,12,0,0);
+[Mars_coe0, Mars_r0, Mars_v0, Mars_julianday] = planet_elements_and_sv(4,2007,9,27,0,0,0);
 
 %Mars right ascension and declination
 [Mars_ra,Mars_dec] = ra_and_dec_from_r(Mars_r0);
@@ -65,6 +69,10 @@ Park_v0 = sqrt(Earth_mu/Park_r0(1)); %km/s
 %Angle between Earth and Mars
 EM_cos = [Earth_r0(1:2),0]*[Mars_r0(1:2),0]'/(norm([Earth_r0(1:2),0])*norm([Mars_r0(1:2),0]));
 Earth_Mars = rad2deg(acos(EM_cos));
+
+%% Final conditions
+[Earth_coef, Earth_rf, Earth_vf, Earth_juliandayf] = planet_elements_and_sv(3,2009,2,17,0,0,0);
+[Mars_coef, Mars_rf, Mars_vf, Mars_juliandayf] = planet_elements_and_sv(4,2009,2,17,0,0,0);
 
 %% Foci
 Earth_focus = Rotz(Earth_coe0(3))*Rotx(Earth_coe0(4))*[0;sqrt(Earth_coe0(7)^2-(Earth_coe0(7)*sqrt(1-Earth_coe0(2)^2))^2);0];
@@ -82,6 +90,8 @@ Park_T = 2*pi*parkingOrbit^(3/2)/sqrt(Earth_mu);
 figure(1)
 grid
 hold on
+
+orbit = orbitAttempt;
 
 %% Choosing point of departure
 n = 10^10;
@@ -158,10 +168,12 @@ zlabel('z')
 plot_orbit(Mars_coe0(3),Mars_coe0(4),Mars_major,Mars_minor,Mars_focus)
 
 plot3(Earth_r0(1),Earth_r0(2),Earth_r0(3),'bo')
+plot3(Earth_rf(1),Earth_rf(2),Earth_rf(3),'bx')
 plot3(Mars_r0(1),Mars_r0(2),Mars_r0(3),'ro')
+plot3(Mars_rf(1),Mars_rf(2),Mars_rf(3),'rx')
 
-plot3([Earth_focus(1),Earth_r(1)],[Earth_focus(2),Earth_r(2)],[Earth_focus(3),Earth_r(3)],'b-+')
-plot3([Mars_focus(1),Mars_r(1)],[Mars_focus(2),Mars_r(2)],[Mars_focus(3),Mars_r(3)],'r-+')
+% plot3([Earth_focus(1),Earth_r(1)],[Earth_focus(2),Earth_r(2)],[Earth_focus(3),Earth_r(3)],'b-+')
+% plot3([Mars_focus(1),Mars_r(1)],[Mars_focus(2),Mars_r(2)],[Mars_focus(3),Mars_r(3)],'r-+')
 
 %% Lambert attempt
 part = datevec(datenum(2007,12,18));
