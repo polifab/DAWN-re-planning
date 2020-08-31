@@ -58,11 +58,11 @@
                              month_planet_names
 %}
 
-clear all
+% clear all
 clc
 
 global mu
-mu  = 1.327124e11;
+mu  = 1.327124e11;%Sun mu
 deg = pi/180;
 
 % Departure

@@ -1,26 +1,32 @@
-function plot_orbit(ra,incl,maj,min,focus)
-    %argument of cosine/sine
-    alpha = 0:pi/100:2*pi;
+function plot_orbit(planet_id)
+%   planet_id - planet identifier:
+%                1 = Mercury
+%                2 = Venus
+%                3 = Earth
+%                4 = Mars
+%                5 = Jupiter
+%                7 = Uranus
+%                8 = Neptune
+%                9 = Pluto
+
+    year = [88,
+            225,
+            365,
+            687,
+            4333,
+            10759,
+            30687,
+            60190];
+
+    [~, r0, v0, ~] = planet_elements_and_sv(planet_id,2007,1,1,0,0,0);
+
+    pos = [r0];
+    for g = 1:year(planet_id)
+        %planet position day by day
+        [r, ~] = rv_from_r0v0(r0, v0, g*60*60*24);
+        pos = cat(1,pos,r);
+    end
+
+    plot3(pos(:,1),pos(:,2),pos(:,3),'--')
     
-    %rotation matrix
-    rx = Rotx(incl);
-    rz = Rotz(ra);
-    rr = Rotz(deg2rad(48.7988));
-    
-    %standard ellipse equations
-    x = maj*cos(alpha);
-    y = min*sin(alpha);
-    z = zeros(length(x));
-    
-    i = 1:1:length(x);
-    
-    %Rotated ellipse
-    points  = rz*rx*rr*[x(i);y(i);z(i)];
-    
-    plot3(focus(1)+points(1,1:size(points,2)),focus(2)+points(2,1:size(points,2)),focus(3)+points(3,1:size(points,2)),'--')
-    
-    %tested alternatives
-%     plot3(-0.05*10^8+points(1,1:size(points,2)),0.17*10^8+2.4983*10^6+points(2,1:size(points,2)),points(3,1:size(points,2))) -> Mars
-%     plot3(points(1,1:size(points,2)),-3.0*10^6+points(2,1:size(points,2)),points(3,1:size(points,2)))
-%     plot3(points(1,1:size(points,2)),points(2,1:size(points,2)),points(3,1:size(points,2)))
 end

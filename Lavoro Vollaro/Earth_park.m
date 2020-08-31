@@ -1,5 +1,5 @@
-function Earth_park
-% ORBIT computes the orbit of a spacecraft by using rkf45 to 
+function Earth_park(rr)
+% EARTH_PARK computes the orbit of a spacecraft by using rkf45 to 
 %   numerically integrate Equation 2.22.
 % 
 %   It also plots the orbit and computes the times at which the maximum
@@ -9,7 +9,7 @@ function Earth_park
 %   G         - universal gravitational constant (km^3/kg/s^2)
 %   m1        - planet mass (kg)
 %   m2        - spacecraft mass (kg)
-%   mu        - gravitational parameter (km^3/s^2)
+%   Earth_mu        - gravitational parameter (km^3/s^2)
 %   R         - planet radius (km)
 %   r0        - initial position vector (km)
 %   v0        - initial velocity vector (km/s)
@@ -34,32 +34,38 @@ function Earth_park
 % User M-function required:   rkf45
 % User subfunctions required: rates, output
 
-    clc; close all; clear all
+%     clc; close all; clear all
 
+    %% Constants
     hours = 3600;
     G     = 6.6742e-20;
 
-    %...Input data:
+    %% Input data:
     %   Earth:
     m1 = 5.974e24;
     R  = 6378;
+    
+    %Spacecraft
     m2 = 1000;
-    mu    = G*(m1 + m2);
+    
+    Earth_mu    = G*(m1 + m2);
     r0 = [R+200, 0, 0];
-    Park_v0 = sqrt(mu/r0(1)); %km/s
+%     r0 = rr + [R+200,0,0];
+    
+    %Parking orbit
+    Park_v0 = sqrt(Earth_mu/r0(1)); %[km/s]
     v0 = [0, Park_v0, 0];
 
+    %Time
     t0 = 0;
     tf = 100*hours;%1.5*hours;
-    %...End input data
 
-
-    %...Numerical integration:
+    %% Numerical integration:
     
     y0    = [r0 v0]';
     [t,y] = rkf45(@rates, [t0 tf], y0);
 
-    %...Output the results:
+    %% Output the results:
     output
 
     return
@@ -89,9 +95,9 @@ function Earth_park
 
         r    = norm([x y z]);
 
-        ax   = -mu*x/r^3;
-        ay   = -mu*y/r^3;
-        az   = -mu*z/r^3;
+        ax   = -Earth_mu*x/r^3;
+        ay   = -Earth_mu*y/r^3;
+        az   = -Earth_mu*z/r^3;
 
         dydt = [vx vy vz ax ay az]';    
     end %rates
@@ -126,7 +132,7 @@ function Earth_park
         v_at_rmax   = norm([y(imax,4) y(imax,5) y(imax,6)]);
         v_at_rmin   = norm([y(imin,4) y(imin,5) y(imin,6)]);
 
-        %...Output to the command window:
+        %% Output to the command window:
         fprintf('\n\n--------------------------------------------------------\n')
         fprintf('\n Earth Orbit\n')
         fprintf(' %s\n', datestr(now))
@@ -145,7 +151,7 @@ function Earth_park
         fprintf('\n The speed at that point is %g km/s\n', v_at_rmax)
         fprintf('\n--------------------------------------------------------\n\n')
 
-        %...Plot the results:
+        %% Plot the results:
         %   Draw the planet
         load('topo.mat','topo','topomap1')
         topo2 = [topo(:,181:360) topo(:,1:180)]; %#ok<NODEF>
@@ -156,50 +162,32 @@ function Earth_park
 
         % Create the sphere with Earth topography and adjust colormap
         [xx, yy, zz] = sphere(100);
-        surface(R*xx,R*yy,R*zz,props)
+        surface(rr(1)+R*xx,rr(2)+R*yy,rr(3)+R*zz,props)
         colormap(topomap1);
 
         %   Draw and label the X, Y and Z axes
-        line([0 2*R],   [0 0],   [0 0]); text(2*R,   0,   0, 'X')
-        line(  [0 0], [0 2*R],   [0 0]); text(  0, 2*R,   0, 'Y')
-        line(  [0 0],   [0 0], [0 2*R]); text(  0,   0, 2*R, 'Z')
+%         line([0 2*R],   [0 0],   [0 0]); text(2*R,   0,   0, 'X')
+%         line(  [0 0], [0 2*R],   [0 0]); text(  0, 2*R,   0, 'Y')
+%         line(  [0 0],   [0 0], [0 2*R]); text(  0,   0, 2*R, 'Z')
 
         %   Plot the orbit, draw a radial to the starting point
         %   and label the starting point (o) and the final point (f)
         hold on
-        plot3(  y(:,1),    y(:,2),    y(:,3),'r','LineWidth',1)
-        line([0 r0(1)], [0 r0(2)], [0 r0(3)])
-        text(   y(1,1),    y(1,2),    y(1,3), 'o')
-        text( y(end,1),  y(end,2),  y(end,3), 'f')
+        fprintf('y: [%g , %g , %g ] \n',y(1,1),y(1,2),y(1,3))
+        plot3(  rr(1)+y(:,1),    rr(2)+y(:,2),    rr(3)+y(:,3),'r','LineWidth',1)
+%         line([0 r0(1)], [0 r0(2)], [0 r0(3)])
+        text(   rr(1)+y(1,1),    rr(2)+y(1,2),    rr(3)+y(1,3), 'oo')
+        text( rr(1)+y(end,1),  rr(2)+y(end,2),  rr(3)+y(end,3), 'ff')
 
         %   Select a view direction (a vector directed outward from the origin) 
-        view([1,1,.4])
+%         view([1,1,.4])
 
         %   Specify some properties of the graph
         grid on
         axis equal
-        xlabel('km')
-        ylabel('km')
-        zlabel('km')
-
-        % ~~~~~~~~~~~~~~~~~~~~~~~
-        function map = light_gray
-        %{
-          This function creates a color map for displaying the planet as light
-          gray with a black equator.
-
-          r - fraction of red
-          g - fraction of green
-          b - fraction of blue
-
-            %}
-
-            r = 0.8; g = r; b = r;
-            map = [r g b
-                   0 0 0
-                   r g b];
-        end %light_gray
-        % ~~~~~~~~~~~~~~~~~~~~~~~
+        xlabel('x [km]')
+        ylabel('y [km]')
+        zlabel('z [km]')
 
     end %output
     % ~~~~~~~~~~~~~~~~~~~~~~~

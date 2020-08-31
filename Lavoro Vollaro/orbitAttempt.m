@@ -153,9 +153,9 @@ function yy = orbitAttempt
         %   Draw the planet
         [xx, yy, zz] = sphere(100);
         surf(R*xx, R*yy, R*zz);
-        colormap(light_gray)
-        caxis([-R/100 R/100])
-        shading interp
+%         colormap(light_gray)
+%         caxis([-R/100 R/100])
+%         shading interp
 
         %   Draw and label the X, Y and Z axes
 %         line([0 2*R],   [0 0],   [0 0]); text(2*R,   0,   0, 'X')

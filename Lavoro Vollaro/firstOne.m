@@ -90,7 +90,7 @@ Park_T = 2*pi*parkingOrbit^(3/2)/sqrt(Earth_mu);
 figure(1)
 grid
 hold on
-
+Earth_park(Earth_r0)
 orbit = orbitAttempt;
 
 %% Choosing point of departure

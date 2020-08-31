@@ -13,7 +13,7 @@ orbitAttempt.m:
     Mars, following the patched conics method
     - time restricted (tf from EarthMars_orbit.m)
     
-Earth_park:
+Earth_park.m:
     - plots parking orbit around Earth
     - visually good wrt Earth aspect
     - uses 3rd party function 'earth_sphere'
