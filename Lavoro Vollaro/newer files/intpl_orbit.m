@@ -1,4 +1,4 @@
-function orb = interplanetary_orbitALL(obj_id,arr_days,from,v_init)
+function orb = intpl_orbit(obj_id,arr_days,r_init,v_init)
 %   INTERPLANETARY_ORBIT computes the orbit of a spacecraft around a main
 %   body, by using rkf45 to numerically integrate Equation 2.22.
 % 
@@ -81,18 +81,17 @@ function orb = interplanetary_orbitALL(obj_id,arr_days,from,v_init)
              476.2
              695508]; %[km]   
     
-    %Sun
+    %Object
     m1 = masses(obj_id); %[kg]
     R  = radii(obj_id); %[km]
     
     %Spacecraft
     m2 = 1000; %[kg]
     
-    r0 = from; %[km,km,km]
-    v0 = v_init; %[km/s,km/s,km/s] from Earth_Mars.m
+    r0 = r_init; %[km,km,km]
+    v0 = v_init; %[km/s,km/s,km/s]
 
     t0 = 0; %[s]
-    %tf obtained as tof from Earth_Mars.m
     tf = arr_days*24*hours; % [s]
 
     
@@ -193,32 +192,12 @@ function orb = interplanetary_orbitALL(obj_id,arr_days,from,v_init)
         %% Plot the results:
         
         %Draw the planet
-        [xx, orb, zz] = sphere(100);
-        surf(R*xx, R*orb, R*zz);
+        body_sphere(obj_id,r0);
         
         %Plot the orbit, draw a radial to the starting point
         %and label the starting point (o) and the final point (f)
         hold on
         plot3(  y(:,1),    y(:,2),    y(:,3),'k')
-
-        %% ~~~~~~~~~~~~~~~~~~~~~~~
-        function map = light_gray
-        %{
-          This function creates a color map for displaying the planet as light
-          gray with a black equator.
-
-          r - fraction of red
-          g - fraction of green
-          b - fraction of blue
-
-            %}
-
-            r = 0.8; g = r; b = r;
-            map = [r g b
-                   0 0 0
-                   r g b];
-        end %light_gray
-        % ~~~~~~~~~~~~~~~~~~~~~~~
 
     end %output
     % ~~~~~~~~~~~~~~~~~~~~~~~

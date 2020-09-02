@@ -167,18 +167,18 @@ function yy = orbitAttempt
         hold on
         plot3(  y(:,1),    y(:,2),    y(:,3),'k')
 %         line([0 r0(1)], [0 r0(2)], [0 r0(3)])
-        text(   y(1,1),    y(1,2),    y(1,3), 'o')
-        text( y(end,1),  y(end,2),  y(end,3), 'f')
+%         text(   y(1,1),    y(1,2),    y(1,3), 'o')
+%         text( y(end,1),  y(end,2),  y(end,3), 'f')
 
         %   Select a view direction (a vector directed outward from the origin) 
-        view([1,1,.4])
+%         view([1,1,.4])
 
         %   Specify some properties of the graph
-        grid on
+%         grid on
 %         axis equal
-        xlabel('km')
-        ylabel('km')
-        zlabel('km')
+%         xlabel('km')
+%         ylabel('km')
+%         zlabel('km')
 
         % ~~~~~~~~~~~~~~~~~~~~~~~
         function map = light_gray

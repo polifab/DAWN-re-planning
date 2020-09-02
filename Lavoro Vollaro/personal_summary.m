@@ -1,10 +1,12 @@
                                 Done
-EarthMars_orbit.m:
+gen_orbit.m:
     - computes planets position/velocity, spacecraft velocity,
-    v-infty, both at departure and at arrival
+      v-infty, both at departure and at arrival
     - computes time of flight
     - computes orbital elements of interplanetary trajectory, and some
-    of its characteristics
+      of its characteristics
+    - for any couple of body from Mercury to Pluto, plus Vesta,
+      Ceres and the Sun
     
 orbitAttempt.m:
     %done - tries to compute and visualize cruise orbit around Sun from
@@ -13,26 +15,33 @@ orbitAttempt.m:
     Mars, following the patched conics method
     - time restricted (tf from EarthMars_orbit.m)
     
-Earth_park.m:
-    - plots parking orbit around Earth
+park_orbit.m:
+    - plots parking orbit around a body
     - visually good wrt Earth aspect
-    - uses 3rd party function 'earth_sphere'
+    - only circular orbits for now
     
-planet_sphere:
-    - draft
-    - ideally the same as earth_sphere but for all planets
+body_sphere:
+    - allows to plot a sphere representing an object
+    - surface with image of the body
+    - from Mercury to Pluto, plus Vesta, Ceres and the Sun
     
 plot_orbit.m:
-    - plots orbit of the planet, given some coes
+    - plots orbit of all the planets, plus Vesta, Ceres and the Sun
     
 plot_interplanetary.m:
     - plot Earth and Mars orbit
     - plot initial (27/9/07) and final (17/2/09) of Earth and Mars
     - plot spacecraft trajectory for interplanetary travel
+    
+intpl_orbit.m:
+    - plot the interplanetary orbit between two points
+    - from position and velocity at departure
+    - tof as argument
+    - uses only the main body (2-body problem hypothesys)
 
 
                                 TODO:
-- complete planet_sphere (do later)
+%done in body_sphere - complete planet_sphere (do later)
 %done - plot interplanetary trajectory -> with (bi)ellipse? 
 %       time recursive?
 - flyby
@@ -43,5 +52,6 @@ plot_interplanetary.m:
 - departing position from Mars in flyby?
 - visualize each substep
 - plot together
-- extend plot_orbit to all planet with ease
+%done - extend plot_orbit to all planet with ease
 - adapt all files to one simple workflow
+- maybe erase global mu and substitute it with a local variable?

@@ -1,15 +1,31 @@
-function Earth_park(rr)
-% EARTH_PARK computes the orbit of a spacecraft by using rkf45 to 
+function park_orbit(obj_id,rr,dist)
+% PARK_ORBIT computes the orbit of a spacecraft by using rkf45 to 
 %   numerically integrate Equation 2.22.
 % 
 %   It also plots the orbit and computes the times at which the maximum
 %   and minimum radii occur and the speeds at those times.
 % 
+%   obj_id      - identifier of the main body in the hypothesis of 2-body
+%                 problem:
+%                1 = Mercury
+%                2 = Venus
+%                3 = Earth
+%                4 = Mars
+%                5 = Jupiter
+%                6 = Saturn
+%                7 = Uranus
+%                8 = Neptune
+%                9 = Pluto
+%               10 = Vesta
+%               11 = Ceres
+%               12 = Sun
+%   rr        - position of the planet in heliocentric components
+%   dist      - radius of the circular parking orbit
 %   hours     - converts hours to seconds
 %   G         - universal gravitational constant (km^3/kg/s^2)
 %   m1        - planet mass (kg)
 %   m2        - spacecraft mass (kg)
-%   Earth_mu        - gravitational parameter (km^3/s^2)
+%   obj_mu        - gravitational parameter (km^3/s^2)
 %   R         - planet radius (km)
 %   r0        - initial position vector (km)
 %   v0        - initial velocity vector (km/s)
@@ -33,32 +49,54 @@ function Earth_park(rr)
 % 
 % User M-function required:   rkf45
 % User subfunctions required: rates, output
-
-%     clc; close all; clear all
-
+    
     %% Constants
-    hours = 3600;
+   
+    hours = 3600; %[s]
     G     = 6.6742e-20;
 
     %% Input data:
-    %   Earth:
-    m1 = 5.974e24;
-    R  = 6378;
+    masses = 10^24 * [0.330
+                  4.87
+                  5.97
+                  0.642
+                  1898
+                  568
+                  86.8
+                  102
+                  0.0146
+                  0.0002589
+                  0.000947
+                  1989100]; %[kg]
+    radii = [2439.5
+             6052 
+             6378
+             3396
+             71492
+             60268
+             25559
+             24764
+             1185
+             262.7
+             476.2
+             695508]; %[km]  
+    %Object
+    m1 = masses(obj_id);
+    R  = radii(obj_id);
     
     %Spacecraft
     m2 = 1000;
     
-    Earth_mu    = G*(m1 + m2);
-    r0 = [R+200, 0, 0];
-%     r0 = rr + [R+200,0,0];
+    obj_mu    = G*(m1 + m2);
+    r0 = [R+dist, 0, 0];
     
     %Parking orbit
-    Park_v0 = sqrt(Earth_mu/r0(1)); %[km/s]
+    Park_v0 = sqrt(obj_mu/r0(1)); %[km/s]
     v0 = [0, Park_v0, 0];
 
     %Time
     t0 = 0;
-    tf = 100*hours;%1.5*hours;
+    tf = 100*hours;
 
     %% Numerical integration:
     
@@ -95,9 +133,9 @@ function Earth_park(rr)
 
         r    = norm([x y z]);
 
-        ax   = -Earth_mu*x/r^3;
-        ay   = -Earth_mu*y/r^3;
-        az   = -Earth_mu*z/r^3;
+        ax   = -obj_mu*x/r^3;
+        ay   = -obj_mu*y/r^3;
+        az   = -obj_mu*z/r^3;
 
         dydt = [vx vy vz ax ay az]';    
     end %rates
@@ -151,43 +189,12 @@ function Earth_park(rr)
         fprintf('\n The speed at that point is %g km/s\n', v_at_rmax)
         fprintf('\n--------------------------------------------------------\n\n')
 
-        %% Plot the results:
-        %   Draw the planet
-        load('topo.mat','topo','topomap1')
-        topo2 = [topo(:,181:360) topo(:,1:180)]; %#ok<NODEF>
-        props.FaceColor= 'texture';
-        props.EdgeColor = 'none';
-        props.FaceLighting = 'phong';
-        props.Cdata = topo2;
-
-        % Create the sphere with Earth topography and adjust colormap
-        [xx, yy, zz] = sphere(100);
-        surface(rr(1)+R*xx,rr(2)+R*yy,rr(3)+R*zz,props)
-        colormap(topomap1);
-
-        %   Draw and label the X, Y and Z axes
-%         line([0 2*R],   [0 0],   [0 0]); text(2*R,   0,   0, 'X')
-%         line(  [0 0], [0 2*R],   [0 0]); text(  0, 2*R,   0, 'Y')
-%         line(  [0 0],   [0 0], [0 2*R]); text(  0,   0, 2*R, 'Z')
-
+        %% Figure
+        body_sphere(obj_id,rr);
         %   Plot the orbit, draw a radial to the starting point
         %   and label the starting point (o) and the final point (f)
         hold on
-%         fprintf('y: [%g , %g , %g ] \n',y(1,1),y(1,2),y(1,3))
         plot3(  rr(1)+y(:,1),    rr(2)+y(:,2),    rr(3)+y(:,3),'r','LineWidth',1)
-%         line([0 r0(1)], [0 r0(2)], [0 r0(3)])
-%         text(   rr(1)+y(1,1),    rr(2)+y(1,2),    rr(3)+y(1,3), 'oo')
-%         text( rr(1)+y(end,1),  rr(2)+y(end,2),  rr(3)+y(end,3), 'ff')
-
-        %   Select a view direction (a vector directed outward from the origin) 
-%         view([1,1,.4])
-
-        %   Specify some properties of the graph
-%         grid on
-%         axis equal
-%         xlabel('x [km]')
-%         ylabel('y [km]')
-%         zlabel('z [km]')
 
     end %output
     % ~~~~~~~~~~~~~~~~~~~~~~~

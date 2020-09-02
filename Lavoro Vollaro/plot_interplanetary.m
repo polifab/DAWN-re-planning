@@ -23,12 +23,12 @@ orbit = orbitAttempt;
 alpha = 0:pi/200:2*pi;
 phi = -pi/2:pi/100:pi/2;
 
-plot_orbit(Earth_coe0(3),Earth_coe0(4),Earth_coe0(7),Earth_coe0(7)*sqrt(1-Earth_coe0(2)^2),Rotz(Earth_coe0(3))*Rotx(Earth_coe0(4))*[0;sqrt(Earth_coe0(7)^2-(Earth_coe0(7)*sqrt(1-Earth_coe0(2)^2))^2);0])
+plot_orbit(3)
 xlabel('x')
 ylabel('y')
 zlabel('z')
 
-plot_orbit(Mars_coe0(3),Mars_coe0(4),Mars_coe0(7),Mars_coe0(7)*sqrt(1-Mars_coe0(2)^2),Rotz(Earth_coe0(3))*Rotx(Earth_coe0(4))*[0;sqrt(Earth_coe0(7)^2-(Earth_coe0(7)*sqrt(1-Earth_coe0(2)^2))^2);0])
+plot_orbit(4)
 
 plot3(Earth_r0(1),Earth_r0(2),Earth_r0(3),'bo')
 plot3(Earth_rf(1),Earth_rf(2),Earth_rf(3),'bx')
