@@ -13,31 +13,31 @@ function plot_orbit(obj_id)
 %               11 = Ceres
 %               12 = Sun
 
-    year = [88,
-            225,
-            365,
-            687,
-            4331,
-            10747,
-            30589,
-            59800,
-            90560,
-            1325,
-            1682,
+    year = [88 
+            225 
+            365 
+            687 
+            4331 
+            10747 
+            30589 
+            59800 
+            90560 
+            1330 
+            1682 
             0];
         
-    colors = ["g",
-              "m",
-              "b",
-              "r",
-              "#A2142F",
-              "#7E2F8E",
-              "#4DBEEE",
-              "c",
-              "#D95319",
-              "#77AC30",
-              "#EDB120",
-              "#D95319"];
+    colors = ["g"          %green
+              "m"          %magenta
+              "b"          %blue
+              "r"          %red
+              "#A2142F"    %darker red
+              "#7E2F8E"    %purple
+              "#4DBEEE"    %darker cyan
+              "c"          %(bright) cyan
+              "#D95319"    %orange
+              "#77AC30"    %darker green
+              "#EDB120"    %ochre
+              "#D95319"];  %orange, not visible due to Sun orbit dimensions
 
     [~, r0, v0, ~] = planet_elements_and_sv(obj_id,2007,1,1,0,0,0);
 
