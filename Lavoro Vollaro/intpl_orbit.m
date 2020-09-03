@@ -1,11 +1,11 @@
-function orb = intpl_orbit(obj_id,arr_days,r_init,v_init)
+function orb = intpl_orbit(main_id,arr_days,r_init,v_init)
 %   INTERPLANETARY_ORBIT computes the orbit of a spacecraft around a main
 %   body, by using rkf45 to numerically integrate Equation 2.22.
 % 
 %   It also plots the orbit and computes the times at which the maximum
 %   and minimum radii occur and the speeds at those times.
 % 
-%   obj_id  - identifier of the main body in the hypothesis of 2-body
+%   main_id  - identifier of the main body in the hypothesis of 2-body
 %             problem:
 %                1 = Mercury
 %                2 = Venus
@@ -82,8 +82,8 @@ function orb = intpl_orbit(obj_id,arr_days,r_init,v_init)
              695508]; %[km]   
     
     %Object
-    m1 = masses(obj_id); %[kg]
-    R  = radii(obj_id); %[km]
+    m1 = masses(main_id); %[kg]
+    R  = radii(main_id); %[km]
     
     %Spacecraft
     m2 = 1000; %[kg]
@@ -192,7 +192,7 @@ function orb = intpl_orbit(obj_id,arr_days,r_init,v_init)
         %% Plot the results:
         
         %Draw the planet
-        body_sphere(obj_id,r0);
+        body_sphere(main_id,r0);
         
         %Plot the orbit, draw a radial to the starting point
         %and label the starting point (o) and the final point (f)

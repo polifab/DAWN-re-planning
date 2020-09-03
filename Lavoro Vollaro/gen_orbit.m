@@ -81,7 +81,7 @@ function [dep_r,dep_v,arr_r,arr_v,flight] = gen_orbit(dep_id,arr_id,...
 %     dep_r        - position of the main body at departure
 %     dep_v        - velocity of the spacecraft at departure from
 %                    origin SOI
-%     arr_r        - position of the main body at departure
+%     arr_r        - position of the main body at arrival
 %     arr_v        - velocity of the spacecraft at arrival in the 
 %                    destination SOI
 % 
