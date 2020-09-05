@@ -40,3 +40,4 @@ entire_mission.m:
 - adapt all files to one simple workflow
 - maybe erase global mu and substitute it with a local variable?
 - could erase plot of main body from intpl_orbit
+- double check parameters using Nasa fact sheets

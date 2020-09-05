@@ -19,6 +19,7 @@ vinf = sqrt(mu/Earth_a)*(sqrt(2*Mars_a/(Earth_a+Mars_a))-1);
 rp = Earth_radius+200;
 e = 1+rp*vinf^2/Earth_mu;
 a = rp/(e-1);
+b = a*sqrt(e^2-1);
 
 vc = sqrt(Earth_mu/rp);
 vp = sqrt(vinf^2+2*Earth_mu/rp);
@@ -60,21 +61,42 @@ end
 % ylim([8*10^6, 10*10^6])
 % zlim([-10*10^5, 10*10^5])
 % view(-10,45)
-plot3(Earth_r0(1)+rr(:,1),Earth_r0(2)+rr(:,2),Earth_r0(3)+rr(:,3),'bo-')
+% plot3(Earth_r0(1)+rr(:,1),Earth_r0(2)+rr(:,2),Earth_r0(3)+rr(:,3),'bo-')
 
 %Angle of orientation of Earth velocity
 vel_dir = deg2rad(atan2d_0_360(Earth_v0(2),Earth_v0(1)));
+out_dir = orbit(2,1:3)-orbit(1,1:3);
+out_angle = deg2rad(atan2d_0_360(out_dir(2),out_dir(1)));
 
 %To visualize Earth velocity direction
-vect = [Earth_radius+200;0;0];
-v_aligned = Earth_r0' + Rotz(vel_dir)*vect;
-plot3([Earth_r0(1),v_aligned(1)],[Earth_r0(2),v_aligned(2)],...
-    [Earth_r0(3),v_aligned(3)],'ro-')
-vect = [-(Earth_radius+200);0;0];
-v_aligned = Earth_r0' + Rotz(vel_dir)*vect;
-plot3([Earth_r0(1),v_aligned(1)],[Earth_r0(2),v_aligned(2)],...
-    [Earth_r0(3),v_aligned(3)],'ro-')
+% vect = [Earth_radius+200;0;0];
+% v_aligned = Earth_r0' + Rotz(vel_dir)*vect;
+% plot3([Earth_r0(1),v_aligned(1)],[Earth_r0(2),v_aligned(2)],...
+%     [Earth_r0(3),v_aligned(3)],'ro-')
 
-c_hyp = Earth_r0' + Rotz(vel_dir)*Rotz(beta)*[-(Earth_radius+200);0;0];
-plot3([Earth_r0(1),c_hyp(1)],[Earth_r0(2),c_hyp(2)],...
-    [Earth_r0(3),c_hyp(3)],'go-')
+% vect = [-(Earth_radius+200);0;0];
+% v_aligned = Earth_r0' + Rotz(vel_dir)*vect;
+% plot3([Earth_r0(1),v_aligned(1)],[Earth_r0(2),v_aligned(2)],...
+%     [Earth_r0(3),v_aligned(3)],'ro-')
+
+% c_hyp = Earth_r0' + Rotz(vel_dir)*Rotz(beta)*[-(Earth_radius+200);0;0];
+% plot3([Earth_r0(1),c_hyp(1)],[Earth_r0(2),c_hyp(2)],...
+%     [Earth_r0(3),c_hyp(3)],'go-')
+
+t = 0:0.1:5;
+
+xh_l = -a*cosh(t);
+xh_r = a*cosh(t);
+yh = b*sinh(t);
+
+hyp = [];
+for i = 1:length(t)
+    point = Earth_r0' + Rotx(incl)*Rotz(out_angle)*Rotz(beta)*([xh_r(i); -yh(i);0]...
+        +[-(a+rp);0;0]);
+    hyp = cat(1,hyp,point');
+%     plot3(point_l(1),point_l(2),point_l(3),'ko')
+    if norm(hyp(size(hyp,1),:)-hyp(1,:))>= Earth_SOI
+        break;
+    end
+end
+plot3(hyp(:,1),hyp(:,2),hyp(:,3),'mo-')
