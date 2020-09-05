@@ -24,7 +24,7 @@ function plot_orbit(obj_id)
             90560 
             1330 
             1682 
-            0];
+            25];
         
     colors = ["g"          %green
               "m"          %magenta
@@ -39,7 +39,7 @@ function plot_orbit(obj_id)
               "#EDB120"    %ochre
               "#D95319"];  %orange, not visible due to Sun orbit dimensions
 
-    [~, r0, v0, ~] = planet_elements_and_sv(obj_id,2007,1,1,0,0,0);
+    [~, r0, v0, ~] = planet_elements_and_sv(obj_id,2000,1,1,0,0,0);
 
     pos = [r0];
     for g = 1:year(obj_id)

@@ -191,8 +191,10 @@ function orb = intpl_orbit(main_id,arr_days,r_init,v_init)
 
         %% Plot the results:
         
+        [~, pos, ~, ~] = planet_elements_and_sv(main_id,2007,9,27,0,0,0);
+        
         %Draw the planet
-        body_sphere(main_id,r0);
+        body_sphere(main_id,pos);
         
         %Plot the orbit, draw a radial to the starting point
         %and label the starting point (o) and the final point (f)
