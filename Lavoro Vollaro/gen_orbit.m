@@ -1,5 +1,5 @@
-function [dep_r,dep_v,arr_r,arr_v,flight] = gen_orbit(dep_id,arr_id,...
-                                               dep_time, arr_time)
+function [dep_r,dep_v,arr_r,arr_v,flight,orb_oe] = ...
+                        gen_orbit(dep_id,arr_id, dep_time, arr_time)
 % GEN_ORBIT generates info about the orbit specified 
 %     mu           - gravitational parameter of the sun (km^3/s^2)
 %     deg          - conversion factor between degrees and radians
@@ -146,6 +146,8 @@ function [dep_r,dep_v,arr_r,arr_v,flight] = gen_orbit(dep_id,arr_id,...
     % Echo the input data and output the solution to
     %   the command window:
     [mm, pp] = month_planet_names(depart(3),depart(1));
+    
+    %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     fprintf('-----------------------------------------------------')
     fprintf('\n\n Departure:\n');
     fprintf('\n   Planet: %s', pp);%planet_name(depart(1)))
@@ -175,9 +177,11 @@ function [dep_r,dep_v,arr_r,arr_v,flight] = gen_orbit(dep_id,arr_id,...
                                            vinf1(1), vinf1(2), vinf1(3))
 
     fprintf('\n   Magnitude                      = %g\n', norm(vinf1))
-
+    %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
     fprintf('\n\n Time of flight = %g days\n', tof)
-
+    
+    %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     [mm,pp] = month_planet_names(arrive(3),arrive(1));
     fprintf('\n\n Arrival:\n');
     fprintf('\n   Planet: %s', pp);
@@ -208,6 +212,7 @@ function [dep_r,dep_v,arr_r,arr_v,flight] = gen_orbit(dep_id,arr_id,...
 
     fprintf('\n   Magnitude                     = %g', norm(vinf2))
 
+    %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     fprintf('\n\n\n Orbital elements of flight trajectory:\n')
 
     fprintf('\n  Angular momentum (km^2/s)                   = %g',...
@@ -226,6 +231,8 @@ function [dep_r,dep_v,arr_r,arr_v,flight] = gen_orbit(dep_id,arr_id,...
                                                           coe2(6)/deg)
     fprintf('\n  Semimajor axis (km)                         = %g',...
                                                                coe(7))
+	%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
     % If the orbit is an ellipse, output the period:
     if coe(2) < 1
         fprintf('\n  Period (days)                               = %g', ...
@@ -238,4 +245,6 @@ function [dep_r,dep_v,arr_r,arr_v,flight] = gen_orbit(dep_id,arr_id,...
     arr_r = R2;
     arr_v = V2;
     flight = tof;
+    %         h     , e     , RA    , incl  , w     , TA    , a
+    orb_oe = [coe(1), coe(2), coe(3), coe(4), coe(5), coe(6), coe(7)];
 end

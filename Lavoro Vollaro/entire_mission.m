@@ -36,7 +36,7 @@ figure2()
 hold on
 
 %Interplanetary orbit
-[body_pos0, sp_v0, body_posf, spacecraft_vf,tof] = ...
+[body_pos0, sp_v0, body_posf, spacecraft_vf,tof, orb_elem] = ...
                 gen_orbit(3,4,[2007 9 27 0 0 0],[2009 2 17 0 0 0]);
 orbit = intpl_orbit(12,tof,Earth_r0,sp_v0);
 
@@ -71,7 +71,10 @@ track = [[orbit(1,1);orbit(2,1)] ...
     [orbit(1,2);orbit(2,2)] ...
     [orbit(1,3);orbit(2,3)]];
 plot3(track(:,1),track(:,2),track(:,3),'k')
-hyperbola_attempt;
+
+% hyperbola_attempt;
+escape_hyp(3,4,orbit(1:2,1:3),[2007 9 27 0 0 0],200, orb_elem);
+
 xlabel('x')
 ylabel('y')
 zlabel('z')
@@ -90,7 +93,8 @@ surface(Earth_r0(1)+Earth_SOI*xx, Earth_r0(2)+Earth_SOI*yy,...
         Earth_r0(3)+Earth_SOI*zz,'FaceColor','none','EdgeColor','b')
 plot3(track(:,1),track(:,2),track(:,3),'k')
 
-
+hyperbola = escape_hyp(3,4,orbit(1:2,1:3),[2007 9 27 0 0 0],...
+                        200, orb_elem);
 
 xlabel('x')
 ylabel('y')
@@ -100,3 +104,7 @@ ylim([8*10^6, 10*10^6])
 zlim([-10*10^5, 10*10^5])
 view(-10,45)
 grid
+
+%% Gathering positions for a TBD animation
+positions = [hyperbola;
+             orbit(2:end,1:3)];

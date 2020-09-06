@@ -1,8 +1,64 @@
-function escape_hyp(planet_id,goal_id,dep_time,park_r,goal_coe)
+function traj = escape_hyp(planet_id, goal_id, orbit, dep_time,...
+                            park_r, goal_coe)
+% ESCAPE_HYP computes the trajectory the spacecraft will follow
+%   to escape desired planet's Sphere of Influence.
+%
+%   Options for the Sun are not contemplated since that would be
+%   the general case of an interplanetary trajectory.
+%
+%   planet_id - identifier of the origin planet:
+%                1 = Mercury
+%                2 = Venus
+%                3 = Earth
+%                4 = Mars
+%                5 = Jupiter
+%                6 = Saturn
+%                7 = Uranus
+%                8 = Neptune
+%                9 = Pluto
+%               10 = Vesta
+%               11 = Ceres
+%
+%   goal_id  - identifier of the destination planet:
+%                1 = Mercury
+%                2 = Venus
+%                3 = Earth
+%                4 = Mars
+%                5 = Jupiter
+%                6 = Saturn
+%                7 = Uranus
+%                8 = Neptune
+%                9 = Pluto
+%               10 = Vesta
+%               11 = Ceres
+%
+%   orbit    - first two points of the interplanetary trajectory
+%              computed via the patched conics method
+%
+%   dep_time - array specifying time of departure with elements 
+%                    (in this order):
+%                     year         - range: 1901 - 2099
+%                     month        - range: 1 - 12
+%                     day          - range: 1 - 31
+%                     hour         - range: 0 - 23
+%                     minute       - range: 0 - 60
+%                     second       - range: 0 - 60
+%   park_r   - radius of the circular parking orbit around origin planet
+%
+%   goal_coe - classical orbital elements of the target interplanetary
+%              orbit:
+%                h    = angular momentum (km^2/s)
+%                e    = eccentricity
+%                RA   = right ascension of the ascending
+%                       node (rad)
+%                incl = inclination of the orbit (rad)
+%                w    = argument of perigee (rad)
+%                TA   = true anomaly (rad)
+%                a    = semimajor axis (km)
 
     %% Argument validation
     validateattributes(dep_time,{'double'},{'size',[1 6]})
-    validateattributes(goal_coe,{'double'},{'size',[1 6]})
+    validateattributes(goal_coe,{'double'},{'size',[1 7]})
 
     %% Data
     global mu
@@ -33,12 +89,33 @@ function escape_hyp(planet_id,goal_id,dep_time,park_r,goal_coe)
              476.2
              695508]; %[km] 
 
-	distances = [];%[km]
-    aphelions = []; %[km]
+	distances = [57909227
+                 108209475
+                 149598262
+                 227943824
+                 778340821
+                 1426666422
+                 2870658186
+                 4498396441
+                 5906440628
+                 491593189
+                 423690250];%[km]
+	
+    aphelions = 10^6 * [57.91
+                       108.21
+                       149.60
+                       227.92
+                       778.57
+                      1433.53
+                      2872.46
+                      4495.06
+                      5906.38
+                       353.35
+                       414.087]; %[km]
     
     G    = 6.6742e-20; %[km^3/kg/s^2]
+    
     %SOI: (m_planet/m_Sun)^(2/5) * distance_from_Sun
-
     pl_SOI = (masses(planet_id)/masses(12))^(2/5)...
         * distances(planet_id); %[km]
     
@@ -138,4 +215,6 @@ function escape_hyp(planet_id,goal_id,dep_time,park_r,goal_coe)
         end
     end
     plot3(hyp(:,1),hyp(:,2),hyp(:,3),'mo-')
+    
+    traj = hyp;
 end
