@@ -1,4 +1,4 @@
-function plot_orbit(obj_id)
+function plot_orbit(obj_id, annus)
 %   planet_id - planet identifier:
 %                1 = Mercury
 %                2 = Venus
@@ -12,6 +12,8 @@ function plot_orbit(obj_id)
 %               10 = Vesta
 %               11 = Ceres
 %               12 = Sun
+%
+%   annus    - year considered, to allow for a more precise plot
 
     year = [88 
             225 
@@ -39,7 +41,7 @@ function plot_orbit(obj_id)
               "#EDB120"    %ochre
               "#D95319"];  %orange, not visible due to Sun orbit dimensions
 
-    [~, r0, v0, ~] = planet_elements_and_sv(obj_id,2000,1,1,0,0,0);
+    [~, r0, v0, ~] = planet_elements_and_sv(obj_id,annus,1,1,0,0,0);
 
     pos = [r0];
     for g = 1:year(obj_id)

@@ -1,5 +1,5 @@
 function traj = escape_hyp(planet_id, goal_id, orbit, dep_time,...
-                            park_r, goal_coe)
+                            park_r, park_i, goal_coe)
 % ESCAPE_HYP computes the trajectory the spacecraft will follow
 %   to escape desired planet's Sphere of Influence.
 %
@@ -124,8 +124,8 @@ function traj = escape_hyp(planet_id, goal_id, orbit, dep_time,...
     pl_a = aphelions(planet_id); %[km]
     goal_a = aphelions(goal_id); %[km]
 
-    %% Needed variables computation
-    [~, pl_r0, pl_v0, ~] =...
+    %% Needed variables
+    [~, pl_r0, ~, ~] =...
         planet_elements_and_sv(planet_id,dep_time(1),dep_time(2),...
                         dep_time(3),dep_time(4),dep_time(5),dep_time(6));
 
@@ -147,11 +147,8 @@ function traj = escape_hyp(planet_id, goal_id, orbit, dep_time,...
     w = deg2rad(goal_coe(5));
 
     n = sqrt(pl_mu/a^3);
-    % figure2()
-    % hold on
-    % grid
-
-    % park_orbit(3,Earth_r0,200)
+    
+    %% Trajectory computation
     rr = [];
 
     for t=0:60:24*3600
@@ -159,61 +156,33 @@ function traj = escape_hyp(planet_id, goal_id, orbit, dep_time,...
         F = kepler_H(e,M);
         cosf = (e-cosh(F))/(e*cosh(F)-1);
         f = acos(cosf);
-    %     fprintf("TA: %4.2f \n",rad2deg(f))
         coe = [h, e, RA, incl, w, f];
-        [r,v] = sv_from_coe(coe,pl_mu);
+        [r,~] = sv_from_coe(coe,pl_mu);
         rr = cat(1,rr,r);
-    %     plot3(Earth_r0(1)+r(1),Earth_r0(2)+r(2),Earth_r0(3)+r(3),'bx')
     end
-    % [xx,yy,zz] = sphere(10);
-    % surface(Earth_r0(1)+Earth_SOI*xx, Earth_r0(2)+Earth_SOI*yy,...
-    %         Earth_r0(3)+Earth_SOI*zz,'FaceColor','none','EdgeColor','b')
 
-    % xlabel('x')
-    % ylabel('y')
-    % zlabel('z')
-    % xlim([ 1.486*10^8, 1.508*10^8])
-    % ylim([8*10^6, 10*10^6])
-    % zlim([-10*10^5, 10*10^5])
-    % view(-10,45)
-    % plot3(Earth_r0(1)+rr(:,1),Earth_r0(2)+rr(:,2),Earth_r0(3)+rr(:,3),'bo-')
-
-    %Angle of orientation of Earth velocity
-    vel_dir = deg2rad(atan2d_0_360(pl_v0(2),pl_v0(1)));
+    %Angle of orientation of escape trajectory
     out_dir = orbit(2,1:3)-orbit(1,1:3);
     out_angle = deg2rad(atan2d_0_360(out_dir(2),out_dir(1)));
 
-    %To visualize Earth velocity direction
-    % vect = [Earth_radius+200;0;0];
-    % v_aligned = Earth_r0' + Rotz(vel_dir)*vect;
-    % plot3([Earth_r0(1),v_aligned(1)],[Earth_r0(2),v_aligned(2)],...
-    %     [Earth_r0(3),v_aligned(3)],'ro-')
-
-    % vect = [-(Earth_radius+200);0;0];
-    % v_aligned = Earth_r0' + Rotz(vel_dir)*vect;
-    % plot3([Earth_r0(1),v_aligned(1)],[Earth_r0(2),v_aligned(2)],...
-    %     [Earth_r0(3),v_aligned(3)],'ro-')
-
-    % c_hyp = Earth_r0' + Rotz(vel_dir)*Rotz(beta)*[-(Earth_radius+200);0;0];
-    % plot3([Earth_r0(1),c_hyp(1)],[Earth_r0(2),c_hyp(2)],...
-    %     [Earth_r0(3),c_hyp(3)],'go-')
-
     t = 0:0.1:5;
 
+    %Parametric hyperbola equations
     xh_l = -a*cosh(t);
     xh_r = a*cosh(t);
     yh = b*sinh(t);
 
     hyp = [];
     for i = 1:length(t)
-        point = pl_r0' + Rotx(incl)*Rotz(out_angle)*Rotz(beta)*([xh_r(i); -yh(i);0]...
-            +[-(a+rp);0;0]);
+        point = pl_r0' + Rotx(incl)*Rotx(park_i)*Rotz(out_angle)*Rotz(beta)*...
+                    ([xh_r(i); -yh(i);0] + [-(a+rp);0;0]);
         hyp = cat(1,hyp,point');
-    %     plot3(point_l(1),point_l(2),point_l(3),'ko')
         if norm(hyp(size(hyp,1),:)-hyp(1,:))>= pl_SOI
             break;
         end
     end
+    
+    %Hyperbola plot
     plot3(hyp(:,1),hyp(:,2),hyp(:,3),'mo-')
     
     traj = hyp;

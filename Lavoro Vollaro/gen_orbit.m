@@ -163,7 +163,7 @@ function [dep_r,dep_v,arr_r,arr_v,flight,orb_oe] = ...
     fprintf('\n   Hour  : %g', depart(5))
     fprintf('\n   Minute: %g', depart(6))
     fprintf('\n   Second: %g', depart(7))
-    fprintf('\n\n   Julian day: %11.3f\n', jd1)
+%     fprintf('\n\n   Julian day: %11.3f\n', jd1)
     fprintf('\n   Planet position vector (km)    = [%g  %g  %g]', ...
                                                    R1(1),R1(2), R1(3))
 
@@ -184,9 +184,9 @@ function [dep_r,dep_v,arr_r,arr_v,flight,orb_oe] = ...
 
     fprintf('\n   Magnitude                      = %g\n', norm(vinf1))
     %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
+    fprintf('\n\n  ~~~~~~~~~~~~\n')
     fprintf('\n\n Time of flight = %g days\n', tof)
-    
+    fprintf('\n\n  ~~~~~~~~~~~~\n')
     %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     [mm,pp] = month_planet_names(arrive(3),arrive(1));
     fprintf('\n\n Arrival:\n');
@@ -197,7 +197,7 @@ function [dep_r,dep_v,arr_r,arr_v,flight,orb_oe] = ...
     fprintf('\n   Hour  : %g', arrive(5))
     fprintf('\n   Minute: %g', arrive(6))
     fprintf('\n   Second: %g', arrive(7))
-    fprintf('\n\n   Julian day: %11.3f\n', jd2)
+%     fprintf('\n\n   Julian day: %11.3f\n', jd2)
     fprintf('\n   Planet position vector (km)   = [%g  %g  %g]', ...
                                                   R2(1), R2(2), R2(3))
 
@@ -219,6 +219,7 @@ function [dep_r,dep_v,arr_r,arr_v,flight,orb_oe] = ...
     fprintf('\n   Magnitude                     = %g', norm(vinf2))
 
     %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    fprintf('\n\n  ~~~~~~~~~~~~\n')
     fprintf('\n\n\n Orbital elements of flight trajectory:\n')
 
     fprintf('\n  Angular momentum (km^2/s)                   = %g',...

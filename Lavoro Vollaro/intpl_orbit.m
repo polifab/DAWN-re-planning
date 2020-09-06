@@ -1,24 +1,10 @@
-function orb = intpl_orbit(main_id,arr_days,r_init,v_init)
+function orb = intpl_orbit(arr_days,r_init,v_init)
 %   INTERPLANETARY_ORBIT computes the orbit of a spacecraft around a main
 %   body, by using rkf45 to numerically integrate Equation 2.22.
 % 
 %   It also plots the orbit and computes the times at which the maximum
 %   and minimum radii occur and the speeds at those times.
-% 
-%   main_id  - identifier of the main body in the hypothesis of 2-body
-%             problem:
-%                1 = Mercury
-%                2 = Venus
-%                3 = Earth
-%                4 = Mars
-%                5 = Jupiter
-%                6 = Saturn
-%                7 = Uranus
-%                8 = Neptune
-%                9 = Pluto
-%               10 = Vesta
-%               11 = Ceres
-%               12 = Sun
+%
 %   arr_days  - days needed for the spacecraft to arrive at destination
 %   r_init    - initial position of the spacecraft
 %   v_init    - initial velocity of the spacecraft
@@ -26,7 +12,7 @@ function orb = intpl_orbit(main_id,arr_days,r_init,v_init)
 %   G         - universal gravitational constant (km^3/kg/s^2)
 %   m1        - planet mass (kg)
 %   m2        - spacecraft mass (kg)
-%   obj_mu      - gravitational parameter (km^3/s^2)
+%   Sun_mu      - gravitational parameter (km^3/s^2)
 %   R         - planet radius (km)
 %   r0        - initial position vector (km)
 %   v0        - initial velocity vector (km/s)
@@ -55,37 +41,14 @@ function orb = intpl_orbit(main_id,arr_days,r_init,v_init)
     
     hours = 3600; % [s]
     G    = 6.6742e-20; %[N m^2/kg^2]
+    Sun_mass = 10^24 * 1989100; %[kg]
+    Sun_radius = 695508; %[km]   
 
     %% Input data:
     
-    masses = 10^24 * [0.330
-                      4.87
-                      5.97
-                      0.642
-                      1898
-                      568
-                      86.8
-                      102
-                      0.0146
-                      0.0002589
-                      0.000947
-                      1989100]; %[kg]
-    radii = [2439.5
-             6052 
-             6378
-             3396
-             71492
-             60268
-             25559
-             24764
-             1185
-             262.7
-             476.2
-             695508]; %[km]   
-    
-    %Object
-    m1 = masses(main_id); %[kg]
-    R  = radii(main_id); %[km]
+    %Sun
+    m1 = Sun_mass; %[kg]
+    R  = Sun_radius; %[km]
     
     %Spacecraft
     m2 = 1000; %[kg]
@@ -97,7 +60,7 @@ function orb = intpl_orbit(main_id,arr_days,r_init,v_init)
     tf = arr_days*24*hours; % [s]
 
     
-    obj_mu   = G*(m1 + m2); %[km^3/s^2]
+    Sun_mu   = G*(m1 + m2); %[km^3/s^2]
     %% Numerical integration:
     
     y0    = [r0 v0]';
@@ -135,9 +98,9 @@ function orb = intpl_orbit(main_id,arr_days,r_init,v_init)
 
         r    = norm([x y z]);
 
-        ax   = -obj_mu*x/r^3;
-        ay   = -obj_mu*y/r^3;
-        az   = -obj_mu*z/r^3;
+        ax   = -Sun_mu*x/r^3;
+        ay   = -Sun_mu*y/r^3;
+        az   = -Sun_mu*z/r^3;
 
         dydt = [vx vy vz ax ay az]';    
     end %rates
@@ -193,10 +156,10 @@ function orb = intpl_orbit(main_id,arr_days,r_init,v_init)
 
         %% Plot the results:
         
-        [~, pos, ~, ~] = planet_elements_and_sv(main_id,2007,9,27,0,0,0);
+        [~, pos, ~, ~] = planet_elements_and_sv(12,2007,9,27,0,0,0);
         
         %Draw the planet
-        body_sphere(main_id,pos);
+%         body_sphere(12,pos);
         
         %Plot the orbit, draw a radial to the starting point
         %and label the starting point (o) and the final point (f)
