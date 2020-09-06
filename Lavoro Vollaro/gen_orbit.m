@@ -16,6 +16,9 @@ function [dep_r,dep_v,arr_r,arr_v,flight,orb_oe] = ...
 %                   7 = Uranus
 %                   8 = Neptune
 %                   9 = Pluto
+%                  10 = Vesta
+%                  11 = Ceres
+%                  12 = Sun
 %                   
 %     arr_id       - arrival body identifier:
 %                   1 = Mercury
@@ -27,6 +30,9 @@ function [dep_r,dep_v,arr_r,arr_v,flight,orb_oe] = ...
 %                   7 = Uranus
 %                   8 = Neptune
 %                   9 = Pluto
+%                  10 = Vesta
+%                  11 = Ceres
+%                  12 = Sun
 % 
 %     dep_time     - array specifying time of departure with elements 
 %                    (in this order):

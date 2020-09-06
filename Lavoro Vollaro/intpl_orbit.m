@@ -20,6 +20,8 @@ function orb = intpl_orbit(main_id,arr_days,r_init,v_init)
 %               11 = Ceres
 %               12 = Sun
 %   arr_days  - days needed for the spacecraft to arrive at destination
+%   r_init    - initial position of the spacecraft
+%   v_init    - initial velocity of the spacecraft
 %   hours     - converts hours to seconds
 %   G         - universal gravitational constant (km^3/kg/s^2)
 %   m1        - planet mass (kg)

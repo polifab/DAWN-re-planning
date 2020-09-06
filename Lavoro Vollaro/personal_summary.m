@@ -43,3 +43,4 @@ entire_mission.m:
 - double check parameters using Nasa fact sheets
 - fit planet images to their inclinations
 - help sections
+- no need for main in intpl_orbit
