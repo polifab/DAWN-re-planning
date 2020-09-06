@@ -11,9 +11,22 @@ mu = 1.327*(10^11); %[km^3/s^2]
 Earth_SOI = 9.24*10^5; %[km]
 Mars_SOI = 5.74*10^5; %[km]
 
+colors = ["g"          %green
+          "m"          %magenta
+          "b"          %blue
+          "r"          %red
+          "#A2142F"    %darker red
+          "#7E2F8E"    %purple
+          "#4DBEEE"    %darker cyan
+          "c"          %(bright) cyan
+          "#D95319"    %orange
+          "#77AC30"    %darker green
+          "#EDB120"    %ochre
+          "#D95319"];  %orange, not visible due to Sun orbit dimensions
+
 %% Initial and final configurations
 %Sun position for reference
-[Sun_coe0, Sun_r0, Sun_v0, Sun_julianday] = planet_elements_and_sv(3,2007,9,27,0,0,0);
+% [Sun_coe0, Sun_r0, Sun_v0, Sun_julianday] = planet_elements_and_sv(3,2007,9,27,0,0,0);
 %Earth elements and sv in the eliocentric system
 % with respect to the sun
 [Earth_coe0, Earth_r0, Earth_v0, Earth_julianday] = planet_elements_and_sv(3,2007,9,27,0,0,0);
@@ -104,6 +117,42 @@ ylim([8*10^6, 10*10^6])
 zlim([-10*10^5, 10*10^5])
 view(-10,45)
 grid
+
+%% Mars - Vesta travel
+[Vesta_coe0, Vesta_r0, Vesta_v0, Vesta_julianday0] = planet_elements_and_sv(10,2009,2,17,0,0,0);
+[Vesta_coef, Vesta_rf, Vesta_vf, Vesta_juliandayf] = planet_elements_and_sv(10,2011,7,16,0,0,0);
+[Mars_coe2, Mars_r2, Mars_v2, Mars_julianday2] = planet_elements_and_sv(4,2011,7,16,0,0,0);
+figure(1)
+
+%Interplanetary orbit
+[body_pos2, sp_v2, body_pos2, spacecraft_v2,tof2, orb_elem2] = ...
+                gen_orbit(4,10,[2009 2 17 0 0 0],[2011 7 16 0 0 0]);
+orbit = intpl_orbit(12,tof2,Mars_rf,sp_v2);
+
+plot_orbit(10)
+
+plot3(Mars_r2(1),Mars_r2(2),Mars_r2(3),'rd')
+plot3(Vesta_r0(1),Vesta_r0(2),Vesta_r0(3),'o','Color',colors(10))
+plot3(Vesta_rf(1),Vesta_rf(2),Vesta_rf(3),'x','Color',colors(10))
+
+%% Vesta - Ceres travel
+[Ceres_coe0, Ceres_r0, Ceres_v0, Ceres_julianday0] = planet_elements_and_sv(11,2012,9,5,0,0,0);
+[Ceres_coef, Ceres_rf, Ceres_vf, Ceres_juliandayf] = planet_elements_and_sv(11,2015,3,6,0,0,0);
+[Vesta_coe1, Vesta_r1, Vesta_v1, Vesta_julianday1] = planet_elements_and_sv(10,2012,9,5,0,0,0);
+[Vesta_coe2, Vesta_r2, Vesta_v2, Vesta_julianday2] = planet_elements_and_sv(10,2015,3,6,0,0,0);
+figure(1)
+
+%Interplanetary orbit
+[body_pos3, sp_v3, body_pos3, spacecraft_v3,tof3, orb_elem3] = ...
+                gen_orbit(10,11,[2012 9 5 0 0 0],[2015 3 6 0 0 0]);
+orbit = intpl_orbit(12,tof3,Vesta_r1,sp_v3);
+
+plot_orbit(11)
+
+plot3(Vesta_r1(1),Vesta_r1(2),Vesta_r1(3),'d','Color',colors(10))
+plot3(Vesta_r2(1),Vesta_r2(2),Vesta_r2(3),'+','Color',colors(10))
+plot3(Ceres_r0(1),Ceres_r0(2),Ceres_r0(3),'o','Color',colors(11))
+plot3(Ceres_rf(1),Ceres_rf(2),Ceres_rf(3),'x','Color',colors(11))
 
 %% Gathering positions for a TBD animation
 positions = [hyperbola;
