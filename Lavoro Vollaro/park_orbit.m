@@ -1,4 +1,4 @@
-function park_orbit(obj_id,rr,dist)
+function park_orbit(obj_id,rr,dist,incl)
 % PARK_ORBIT computes the orbit of a spacecraft by using rkf45 to 
 %   numerically integrate Equation 2.22.
 % 
@@ -55,19 +55,32 @@ function park_orbit(obj_id,rr,dist)
     hours = 3600; %[s]
     G     = 6.6742e-20;
 
-    %% Input data:
+    planets = ['Mercury'
+           'Venus  '
+           'Earth  '
+           'Mars   '
+           'Jupiter'
+           'Saturn '
+           'Uranus '
+           'Neptune'
+           'Pluto  '
+           'Vesta  '
+           'Ceres  '
+           'Sun    '];
+       
     masses = 10^24 * [0.330
-                  4.87
-                  5.97
-                  0.642
-                  1898
-                  568
-                  86.8
-                  102
-                  0.0146
-                  0.0002589
-                  0.000947
-                  1989100]; %[kg]
+              4.87
+              5.97
+              0.642
+              1898
+              568
+              86.8
+              102
+              0.0146
+              0.0002589
+              0.000947
+              1989100]; %[kg]
+              
     radii = [2439.5
              6052 
              6378
@@ -79,7 +92,10 @@ function park_orbit(obj_id,rr,dist)
              1185
              262.7
              476.2
-             695508]; %[km]  
+             695508]; %[km]
+         
+
+    %% Input data:
     %Object
     m1 = masses(obj_id);
     R  = radii(obj_id);
@@ -88,11 +104,11 @@ function park_orbit(obj_id,rr,dist)
     m2 = 1000;
     
     obj_mu    = G*(m1 + m2);
-    r0 = [R+dist, 0, 0];
+    r0 = (Rotx(incl)*[R+dist; 0; 0])';
     
     %Parking orbit
     Park_v0 = sqrt(obj_mu/r0(1)); %[km/s]
-    v0 = [0, Park_v0, 0];
+    v0 = (Rotx(incl)*[0; Park_v0; 0])';
 
     %Time
     t0 = 0;

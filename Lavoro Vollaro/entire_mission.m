@@ -78,7 +78,7 @@ grid
 %% Earth close-up
 figure2()
 
-park_orbit(3,Earth_r0,200)
+park_orbit(3,Earth_r0,200,0)
 hold on
 track = [[orbit(1,1);orbit(2,1)] ...
     [orbit(1,2);orbit(2,2)] ...
@@ -100,7 +100,7 @@ grid
 %% Earth SOI close-up
 figure2()
 
-park_orbit(3,Earth_r0,200)
+% park_orbit(3,Earth_r0,200,0)
 hold on
 surface(Earth_r0(1)+Earth_SOI*xx, Earth_r0(2)+Earth_SOI*yy,...
         Earth_r0(3)+Earth_SOI*zz,'FaceColor','none','EdgeColor','b')

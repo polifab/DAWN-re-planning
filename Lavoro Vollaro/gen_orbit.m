@@ -61,8 +61,8 @@ function [dep_r,dep_v,arr_r,arr_v,flight,orb_oe] = ...
 %     planet2      - [Rp2, Vp2, jd2]
 %     trajectory   - [V1, V2]
 % 
-%     coe          - orbital elements [h e RA incl w TA]
-%                  where
+%     coe,orb_elem - orbital elements [h e RA incl w TA a]
+%                     where
 %                    h    = angular momentum (km^2/s)
 %                    e    = eccentricity
 %                    RA   = right ascension of the ascending
