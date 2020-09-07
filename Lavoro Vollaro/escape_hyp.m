@@ -129,7 +129,7 @@ function traj = escape_hyp(planet_id, goal_id, orbit, dep_time,...
         planet_elements_and_sv(planet_id,dep_time(1),dep_time(2),...
                         dep_time(3),dep_time(4),dep_time(5),dep_time(6));
 
-    vinf = sqrt(mu/pl_a)*(sqrt(2*goal_a/(pl_a+goal_a))-1);
+%     vinf = sqrt(mu/pl_a)*(sqrt(2*goal_a/(pl_a+goal_a))-1);
 
     rp = pl_radius+park_r;
     e = 1+rp*vinf^2/pl_mu;
