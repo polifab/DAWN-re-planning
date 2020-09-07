@@ -1,5 +1,5 @@
-function traj = escape_hyp(planet_id, goal_id, orbit, dep_time,...
-                            park_r, park_i, goal_coe)
+function [traj, delta_v] = escape_hyp(planet_id, goal_id, orbit, dep_time,...
+                            park_r, park_i, goal_coe, v2)
 % ESCAPE_HYP computes the trajectory the spacecraft will follow
 %   to escape desired planet's Sphere of Influence.
 %
@@ -55,6 +55,7 @@ function traj = escape_hyp(planet_id, goal_id, orbit, dep_time,...
 %                w    = argument of perigee (rad)
 %                TA   = true anomaly (rad)
 %                a    = semimajor axis (km)
+%   v2 - velocity of the spacecraft at goal planet
 
     %% Argument validation
     validateattributes(dep_time,{'double'},{'size',[1 6]})
@@ -125,11 +126,13 @@ function traj = escape_hyp(planet_id, goal_id, orbit, dep_time,...
     goal_a = aphelions(goal_id); %[km]
 
     %% Needed variables
-    [~, pl_r0, ~, ~] =...
+    [~, pl_r0, v_dep, ~] =...
         planet_elements_and_sv(planet_id,dep_time(1),dep_time(2),...
                         dep_time(3),dep_time(4),dep_time(5),dep_time(6));
+   
+    V_dep = sqrt(dot(v_dep,v_dep));      % module of v_dep               
 
-%     vinf = sqrt(mu/pl_a)*(sqrt(2*goal_a/(pl_a+goal_a))-1);
+    vinf = v2 - V_dep;                   %sqrt(mu/pl_a)*(sqrt(2*goal_a/(pl_a+goal_a))-1);
 
     rp = pl_radius+park_r;
     e = 1+rp*vinf^2/pl_mu;
@@ -147,6 +150,13 @@ function traj = escape_hyp(planet_id, goal_id, orbit, dep_time,...
     w = deg2rad(goal_coe(5));
 
     n = sqrt(pl_mu/a^3);
+    
+        %% delta v
+    mu_dep = masses(planet_id) * G;         % universal gravitational constant of the origin planet
+    v_b = sqrt(vinf^2 + 2*mu_dep/park_r);   % velocity of the spacecraft after burn
+    v_park = sqrt(mu_dep/park_r);           % speed of circular parking orbit around origin planet
+    
+    delta_v = v_b - v_park;                 % delta v needed for the hyperbolic escape trajectory
     
     %% Trajectory computation
     rr = [];
