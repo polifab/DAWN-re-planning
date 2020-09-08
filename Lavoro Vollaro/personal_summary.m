@@ -41,16 +41,15 @@ escape_hyp.m:
     - spacecraft must start from rightly inclinated parking orbit
 
                                 TODO:
-- check Ceres plot
+- fit planet images to their inclinations -> body_sphere
+- add info about starting planet in intpl_orbit? (section already printed)                                
+
 - flyby
-%done - visualize each substep
 - maybe erase global mu and substitute it with a local variable?
-%done - could erase plot of main body from intpl_orbit
 - double check parameters using Nasa fact sheets
-- fit planet images to their inclinations
 - help sections
-%done - no need for main in intpl_orbit
-%done - delete 'julian day' from gen_orbit
 - generate info for parking orbits
 - allow for retrograde escape orbit?
 - simplify functions deleting unused arguments
+- figure performances
+- adapt hyperbola to all planets
