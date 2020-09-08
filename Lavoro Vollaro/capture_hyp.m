@@ -1,41 +1,28 @@
-function [traj2, delta_v2] = capture_hyp(goal_id, orbit, arrival_time,...
-                             park_i, goal_coe, v2)
+function [trajectory, delta_v] = ...
+   capture_hyp(goal_id, orbit, arr_time, park_r,park_i, origin_coe, v_in)
 % ESCAPE_HYP computes the trajectory the spacecraft will follow
-%   to escape desired planet's Sphere of Influence.
-%
+%   to enter the desired planet's Sphere of Influence and 
+%   position itself into a circular parking orbit.
 %   Options for the Sun are not contemplated since that would be
 %   the general case of an interplanetary trajectory.
 %
-%   planet_id - identifier of the origin planet:
-%                1 = Mercury
-%                2 = Venus
-%                3 = Earth
-%                4 = Mars
-%                5 = Jupiter
-%                6 = Saturn
-%                7 = Uranus
-%                8 = Neptune
-%                9 = Pluto
-%               10 = Vesta
-%               11 = Ceres
-%
 %   goal_id  - identifier of the destination planet:
-%                1 = Mercury
-%                2 = Venus
-%                3 = Earth
-%                4 = Mars
-%                5 = Jupiter
-%                6 = Saturn
-%                7 = Uranus
-%                8 = Neptune
-%                9 = Pluto
-%               10 = Vesta
-%               11 = Ceres
+%                    1 = Mercury
+%                    2 = Venus
+%                    3 = Earth
+%                    4 = Mars
+%                    5 = Jupiter
+%                    6 = Saturn
+%                    7 = Uranus
+%                    8 = Neptune
+%                    9 = Pluto
+%                   10 = Vesta
+%                   11 = Ceres
 %
-%   orbit    - first two points of the interplanetary trajectory
+%   orbit    - last two points of the interplanetary trajectory
 %              computed via the patched conics method
 %
-%   arrival_time - array specifying time of arrivalarture with elements 
+%   arr_time - array specifying time of arrival with elements 
 %                    (in this order):
 %                     year         - range: 1901 - 2099
 %                     month        - range: 1 - 12
@@ -43,10 +30,11 @@ function [traj2, delta_v2] = capture_hyp(goal_id, orbit, arrival_time,...
 %                     hour         - range: 0 - 23
 %                     minute       - range: 0 - 60
 %                     second       - range: 0 - 60
-%   park_r   - radius of the circular parking orbit around origin planet
 %
-%   goal_coe - classical orbital elements of the target interplanetary
-%              orbit:
+%   park_r   - radius of the circular parking orbit around planet
+%
+%   origin_coe - classical orbital elements of the origin interplanetary
+%                 orbit:
 %                h    = angular momentum (km^2/s)
 %                e    = eccentricity
 %                RA   = right ascension of the ascending
@@ -55,11 +43,12 @@ function [traj2, delta_v2] = capture_hyp(goal_id, orbit, arrival_time,...
 %                w    = argument of perigee (rad)
 %                TA   = true anomaly (rad)
 %                a    = semimajor axis (km)
-%   v2 - velocity of the spacecraft at goal planet
+%   v_in - velocity of the spacecraft at the entry into the SOI
+%          of the planet
 
     %% Argument validation
-%     validateattributes(arrival_time,{'double'},{'size',[1 6]})
-    %validateattributes(goal_coe,{'double'},{'size',[1 7]})
+    validateattributes(arr_time,{'double'},{'size',[1 6]})
+    validateattributes(origin_coe,{'double'},{'size',[1 7]})
 
     %% Data
     global mu
@@ -101,18 +90,6 @@ function [traj2, delta_v2] = capture_hyp(goal_id, orbit, arrival_time,...
                  5906440628
                  491593189
                  423690250];%[km]
-	
-    aphelions = 10^6 * [57.91
-                       108.21
-                       149.60
-                       227.92
-                       778.57
-                      1433.53
-                      2872.46
-                      4495.06
-                      5906.38
-                       353.35
-                       414.087]; %[km]
     
     G    = 6.6742e-20; %[km^3/kg/s^2]
     
@@ -122,36 +99,34 @@ function [traj2, delta_v2] = capture_hyp(goal_id, orbit, arrival_time,...
     
     pl_mu = G * masses(goal_id); %[km^3/s^2]
     pl_radius = radii(goal_id); %[km]
-    pl_a = aphelions(goal_id); %[km]
-    goal_a = aphelions(goal_id); %[km]
 
     %% Needed variables
-        [~, pl_r0, v_arrival, ~] =...
-        planet_elements_and_sv(goal_id, arrival_time(1),arrival_time(2),...
-                        arrival_time(3),arrival_time(4),arrival_time(5),arrival_time(6));
-   
-    V_arrival = sqrt(dot(v_arrival,v_arrival));       % module of v_arrival                   
+    [~, pl_r0, v_arr, ~] =...
+        planet_elements_and_sv(goal_id, arr_time(1),arr_time(2),...
+                        arr_time(3),arr_time(4),arr_time(5),arr_time(6));
 
-    vinf= sqrt(dot(v2- v_arrival, v2 - v_arrival));          %sqrt(mu/pl_a)*(sqrt(2*goal_a/(pl_a+goal_a))-1);
+    vinf = norm(v_in-v_arr); %sqrt(dot(v2- v_arrival, v2 - v_arrival));
 
-    rp = pl_radius + park_i;
+    rp = pl_radius + park_r;
     e = 1 + rp*vinf^2/pl_mu;
     a = rp/(e-1);
     b = a*sqrt(e^2-1);
-    Delta = sqrt(a*(1 - e^2)*pl_mu/vinf);    % raggio target per ottenere l'iperbole corretta
-    half_delta = asin(1/e);                  % parametro iperbole
+    
+    % target radius for the right hyperbola
+    Delta = sqrt(a*(1 - e^2)*pl_mu/vinf);
+    
+    %Angle between arrival and departure branch of the hyperbola
+    half_delta = asin(1/e);
     
     v_hyp = sqrt(-2*pl_mu/rp + pl_mu/a);
-    vc = sqrt(pl_mu/rp);                     % velocity of parking orbit
-    delta_v2 = v_hyp - vc;                   % delta v from hyperbolic orbit to circular orbit
+    vc = sqrt(pl_mu/rp); % velocity of parking orbit
 
     beta = acos(1/e);
-    
 
     h = Delta*vinf;
-    RA = deg2rad(goal_coe(3));
-    incl = deg2rad(goal_coe(4));
-    w = deg2rad(goal_coe(5));
+    RA = deg2rad(origin_coe(3));
+    incl = deg2rad(origin_coe(4));
+    w = deg2rad(origin_coe(5));
 
     n = sqrt(pl_mu/a^3);
     
@@ -181,8 +156,8 @@ function [traj2, delta_v2] = capture_hyp(goal_id, orbit, arrival_time,...
 
     hyp = [];
     for i = 1:length(t)
-        point = pl_r0' + Rotx(incl)*Rotx(park_i)*Rotz(out_angle)*Rotz(beta)*...
-                    ([xh_r(i); -yh(i);0] + [-(a+rp);0;0]);
+        point = pl_r0' + Rotx(incl)*Rotx(park_i)*Rotz(out_angle)*Rotz(beta+2*half_delta)*...
+                    ([xh_l(i); yh(i);0] + [-(a+rp);0;0]);
         hyp = cat(1,hyp,point');
         if norm(hyp(size(hyp,1),:)-hyp(1,:))>= pl_SOI
             break;
@@ -190,11 +165,8 @@ function [traj2, delta_v2] = capture_hyp(goal_id, orbit, arrival_time,...
     end
     
     %Hyperbola plot
-    plot3(hyp(:,1),hyp(:,2),hyp(:,3),'mo-')
-    grid on;
+    plot3(hyp(:,1),hyp(:,2),hyp(:,3),'k-')
     
-    traj = hyp;
-end
-
-
-                             
+    trajectory = hyp;
+    delta_v = v_hyp - vc;
+end    
