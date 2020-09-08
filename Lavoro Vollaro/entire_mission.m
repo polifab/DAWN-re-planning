@@ -62,7 +62,7 @@ colors = ["g"          %green
 
 %% Entire mission plot
 %Earth - Mars travel
-figure2()
+figure()
 
 hold on
 
@@ -118,7 +118,7 @@ plot3(Ceres_r3(1),Ceres_r3(2),Ceres_r4(3),'d','Color',colors(11))
 plot3(Ceres_r4(1),Ceres_r4(2),Ceres_r4(3),'+','Color',colors(11))
 
 %% Earth close-up
-figure2()
+figure()
 
 park_orbit(3,Earth_r0,Epark_radius,Epark_inclination)
 hold on
