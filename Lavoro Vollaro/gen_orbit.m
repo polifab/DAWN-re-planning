@@ -1,12 +1,16 @@
 function [dep_r,dep_v,arr_r,arr_v,flight,orb_oe] = ...
                         gen_orbit(dep_id,arr_id, dep_time, arr_time)
-% GEN_ORBIT generates info about the orbit specified 
-%     mu           - gravitational parameter of the sun (km^3/s^2)
-%     deg          - conversion factor between degrees and radians
-%     pi           - 3.1415926...
-% 
-% 
-%     dep_id       - departure body identifier:
+% GEN_ORBIT(dep_id, arr_id, dep_time, arr_time) generates info about
+%   the interplanetary orbit of a 1000kg spacecraft departing from 
+%   DEP_ID at DEP_TIME and arriving to ARR_ID at ARR_TIME.
+%   [dep_r,dep_v,arr_r,arr_v,flight,orb_oe] = GEN_ORBIT(...)
+%   returns the starting and final position DEP_R, ARR_R
+%   of the spacecraft (corresponding to the main bodies position
+%   due to the use of the patched conics method), along with its
+%   starting and final velocities DEP_V, ARR_V, the time of flight
+%   FLIGHT and the orbital elements ORB_OE of the trajectory.
+%   
+%    dep_id,arr_id - departure/arrival body identifier:
 %                   1 = Mercury
 %                   2 = Venus
 %                   3 = Earth
@@ -19,21 +23,7 @@ function [dep_r,dep_v,arr_r,arr_v,flight,orb_oe] = ...
 %                  10 = Vesta
 %                  11 = Ceres
 %                  12 = Sun
-%                   
-%     arr_id       - arrival body identifier:
-%                   1 = Mercury
-%                   2 = Venus
-%                   3 = Earth
-%                   4 = Mars
-%                   5 = Jupiter
-%                   6 = Saturn
-%                   7 = Uranus
-%                   8 = Neptune
-%                   9 = Pluto
-%                  10 = Vesta
-%                  11 = Ceres
-%                  12 = Sun
-% 
+%
 %     dep_time     - array specifying time of departure with elements 
 %                    (in this order):
 %                     year         - range: 1901 - 2099
@@ -51,17 +41,8 @@ function [dep_r,dep_v,arr_r,arr_v,flight,orb_oe] = ...
 %                     hour         - range: 0 - 23
 %                     minute       - range: 0 - 60
 %                     second       - range: 0 - 60 
-% 
-%     depart       - [planet_id, year, month, day, hour, minute, second]
-%                  at departure
-%     arrive       - [planet_id, year, month, day, hour, minute, second]
-%                  at arrival
-% 
-%     planet1      - [Rp1, Vp1, jd1]
-%     planet2      - [Rp2, Vp2, jd2]
-%     trajectory   - [V1, V2]
-% 
-%     coe,orb_elem - orbital elements [h e RA incl w TA a]
+%
+%     orb_oe - orbital elements [h e RA incl w TA a]
 %                     where
 %                    h    = angular momentum (km^2/s)
 %                    e    = eccentricity
@@ -72,15 +53,8 @@ function [dep_r,dep_v,arr_r,arr_v,flight,orb_oe] = ...
 %                    TA   = true anomaly (rad)
 %                    a    = semimajor axis (km)
 % 
-%     jd1, jd2     - Julian day numbers at departure and arrival
-%     tof          - time of flight from planet 1 to planet 2 (days)
+%     flight          - time of flight from planet 1 to planet 2 (days)
 % 
-%     Rp1, Vp1     - state vector of planet 1 at departure (km, km/s)
-%     Rp2, Vp2     - state vector of planet 2 at arrival (km, km/s)
-%     R1, V1       - heliocentric state vector of spacecraft at
-%                  departure (km, km/s)
-%     R2, V2       - heliocentric state vector of spacecraft at
-%                  arrival (km, km/s)
 % 
 %     vinf1, vinf2 - hyperbolic excess velocities at departure
 %                  and arrival (km/s)
@@ -100,7 +74,7 @@ function [dep_r,dep_v,arr_r,arr_v,flight,orb_oe] = ...
 
     %% Data
     %Sun mu
-    mu  = 1.327124e11;
+    global mu
     deg = pi/180;
 
     % Departure
@@ -126,10 +100,16 @@ function [dep_r,dep_v,arr_r,arr_v,flight,orb_oe] = ...
     %% Computations
     [planet1, planet2, trajectory] = interplanetary(depart, arrive);
 
+    %Rp1, Vp1: state vector of planet 1 at departure (km, km/s)
+    %R1, V1: heliocentric state vector of the spacecraft 
+    %at departure (km, km/s)
     R1  = planet1(1,1:3);
     Vp1 = planet1(1,4:6);
     jd1 = planet1(1,7);
 
+    %Rp2, Vp2: state vector of planet 2 at arrival (km, km/s)
+    %R2, V2: heliocentric state vector of the spacecraft at
+    %arrival (km, km/s)
     R2  = planet2(1,1:3);
     Vp2 = planet2(1,4:6);
     jd2 = planet2(1,7);
@@ -150,9 +130,10 @@ function [dep_r,dep_v,arr_r,arr_v,flight,orb_oe] = ...
     vinf2 = V2 - Vp2;
 
     % Echo the input data and output the solution to
-    %   the command window:
+    % the command window:
     [mm, pp] = month_planet_names(depart(3),depart(1));
     
+    %% Output info
     %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     fprintf('-----------------------------------------------------')
     fprintf('\n\n Departure:\n');
@@ -163,7 +144,6 @@ function [dep_r,dep_v,arr_r,arr_v,flight,orb_oe] = ...
     fprintf('\n   Hour  : %g', depart(5))
     fprintf('\n   Minute: %g', depart(6))
     fprintf('\n   Second: %g', depart(7))
-%     fprintf('\n\n   Julian day: %11.3f\n', jd1)
     fprintf('\n   Planet position vector (km)    = [%g  %g  %g]', ...
                                                    R1(1),R1(2), R1(3))
 
@@ -197,7 +177,6 @@ function [dep_r,dep_v,arr_r,arr_v,flight,orb_oe] = ...
     fprintf('\n   Hour  : %g', arrive(5))
     fprintf('\n   Minute: %g', arrive(6))
     fprintf('\n   Second: %g', arrive(7))
-%     fprintf('\n\n   Julian day: %11.3f\n', jd2)
     fprintf('\n   Planet position vector (km)   = [%g  %g  %g]', ...
                                                   R2(1), R2(2), R2(3))
 
@@ -247,6 +226,7 @@ function [dep_r,dep_v,arr_r,arr_v,flight,orb_oe] = ...
     end
     fprintf('\n-----------------------------------------------------\n')
     
+    %% Output arguments
     dep_r = R1;
     dep_v = V1;
     arr_r = R2;

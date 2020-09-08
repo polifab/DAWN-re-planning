@@ -1,57 +1,30 @@
 function orb = intpl_orbit(arr_days,r_init,v_init)
-%   INTERPLANETARY_ORBIT computes the orbit of a spacecraft around a main
-%   body, by using rkf45 to numerically integrate Equation 2.22.
-% 
-%   It also plots the orbit and computes the times at which the maximum
-%   and minimum radii occur and the speeds at those times.
+%   INTERPLANETARY_ORBIT(arr_days, r_init, v_init) computes the 
+%   interplanetary orbit a spacecraft of 1000kg would travel
+%   around the Sun in ARR_DAYS days, starting at position R_INIT
+%   with velocity V_INIT.
+%   It uses the patched conics method.
+%   orb = INTPL_ORBIT(...) returns the points composing the orbit.
+%
+%   It uses rkf45 to numerically integrate Equation 2.22 in
+%   "Orbital Mechanics for Engineering Students" - Howard D. Curtis.
 %
 %   arr_days  - days needed for the spacecraft to arrive at destination
 %   r_init    - initial position of the spacecraft
 %   v_init    - initial velocity of the spacecraft
-%   hours     - converts hours to seconds
-%   G         - universal gravitational constant (km^3/kg/s^2)
-%   m1        - planet mass (kg)
-%   m2        - spacecraft mass (kg)
-%   Sun_mu      - gravitational parameter (km^3/s^2)
-%   R         - planet radius (km)
-%   r0        - initial position vector (km)
-%   v0        - initial velocity vector (km/s)
-%   t0,tf     - initial and final times (s)
-%   y0        - column vector containing r0 and v0
-%   t         - column vector of the times at which the solution is found
-%   y         - a matrix whose columns are:
-%                  columns 1, 2 and 3:
-%                     The solution for the x, y and z components of the 
-%                     position vector r at the times in t
-%                  columns 4, 5 and 6:
-%                     The solution for the x, y and z components of the 
-%                     velocity vector v at the times in t
-%   r         - magnitude of the position vector at the times in t
-%   imax      - component of r with the largest value
-%   rmax      - largest value of r
-%   imin      - component of r with the smallest value
-%   rmin      - smallest value of r
-%   v_at_rmax - speed where r = rmax
-%   v_at_rmin - speed where r = rmin
-% 
+%
 % User M-function required:   rkf45
 % User subfunctions required: rates, output
 
     %% Constants
-    
+    global mu
     hours = 3600; % [s]
-    G    = 6.6742e-20; %[N m^2/kg^2]
-    Sun_mass = 10^24 * 1989100; %[kg]
     Sun_radius = 695508; %[km]   
 
     %% Input data:
     
     %Sun
-    m1 = Sun_mass; %[kg]
     R  = Sun_radius; %[km]
-    
-    %Spacecraft
-    m2 = 1000; %[kg]
     
     r0 = r_init; %[km,km,km]
     v0 = v_init; %[km/s,km/s,km/s]
@@ -59,12 +32,13 @@ function orb = intpl_orbit(arr_days,r_init,v_init)
     t0 = 0; %[s]
     tf = arr_days*24*hours; % [s]
 
+    Sun_mu  = mu; %[km^3/s^2]
     
-    Sun_mu   = G*(m1 + m2); %[km^3/s^2]
     %% Numerical integration:
     
+    %Initial condition: position, velocity
     y0    = [r0 v0]';
-    [t,y] = rkf45(@rates, [t0 tf], y0);
+    [t,y] = rkf45(@rates, [t0 tf], y0,1.e-15);
 
     %% Output the results:
     output
@@ -156,15 +130,8 @@ function orb = intpl_orbit(arr_days,r_init,v_init)
 
         %% Plot the results:
         
-        [~, pos, ~, ~] = planet_elements_and_sv(12,2007,9,27,0,0,0);
-        
-        %Draw the planet
-%         body_sphere(12,pos);
-        
-        %Plot the orbit, draw a radial to the starting point
-        %and label the starting point (o) and the final point (f)
         hold on
-        plot3(  y(:,1),    y(:,2),    y(:,3),'k')
+        plot3(  y(:,1),    y(:,2),    y(:,3), 'k', 'LineWidth', 2)
 
     end %output
     % ~~~~~~~~~~~~~~~~~~~~~~~

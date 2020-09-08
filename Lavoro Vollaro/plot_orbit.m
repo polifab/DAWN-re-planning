@@ -1,5 +1,10 @@
 function plot_orbit(obj_id, annus)
-%   planet_id - planet identifier:
+% PLOT_ORBIT(obj_id, annus) plots the orbit of target planet OBJ_ID
+%   during the year ANNUS.
+%   It computes the planet day-by-day position for a complete
+%   orbital revolution of the planet.
+%
+%   obj_id   - planet identifier:
 %                1 = Mercury
 %                2 = Venus
 %                3 = Earth
@@ -13,8 +18,10 @@ function plot_orbit(obj_id, annus)
 %               11 = Ceres
 %               12 = Sun
 %
-%   annus    - year considered, to allow for a more precise plot
+%   annus    - year considered
+%
 
+    %Earth-days for a complete revolution of the planet
     year = [88 
             225 
             365 
@@ -24,7 +31,7 @@ function plot_orbit(obj_id, annus)
             30589 
             59800 
             90560 
-            1330 
+            1400 
             1682 
             25];
         
@@ -41,15 +48,17 @@ function plot_orbit(obj_id, annus)
               "#EDB120"    %ochre
               "#D95319"];  %orange, not visible due to Sun orbit dimensions
 
+	%Starting position at 1/1
     [~, r0, v0, ~] = planet_elements_and_sv(obj_id,annus,1,1,0,0,0);
 
     pos = [r0];
     for g = 1:year(obj_id)
-        %planet position day by day
+        %Planet position day by day
         [r, ~] = rv_from_r0v0(r0, v0, g*60*60*24);
         pos = cat(1,pos,r);
     end
 
+    %Orbit plot
     plot3(pos(:,1),pos(:,2),pos(:,3),'--', 'Color', colors(obj_id))
     
 end

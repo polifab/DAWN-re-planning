@@ -1,3 +1,6 @@
+% File used to automatically compute rate of changes of the orbital
+% elements of Vesta and Ceres
+
 vesta_elem = [ 
    
   9.377284786391739E-02

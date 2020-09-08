@@ -1,4 +1,11 @@
-function body_sphere(obj_id,rr)
+function body_sphere(obj_id,obj_pos)
+% BODY_SPHERE(obj_id,rr) plots a sphere at coordinates OBJ_POS
+%   and applies the image of OBJ_ID body to its surface.
+%   Available: all solar planets, Pluto, Vesta, Ceres, Sun.
+%
+%   obj_id   - numeric identifier of the target body (1-12)
+%   obj_pos  - (x,y,z) coordinates of target body, wrt the Sun
+%
 
     body = ["mercury.jpg" 
             "venus.jpg" 
@@ -26,13 +33,12 @@ function body_sphere(obj_id,rr)
              476.2
              695508]; %[km]
          
-	R = radii(obj_id);
+	R = radii(obj_id); %[km]
     
     [xx,yy,zz] = sphere(100);
-    sp_hand = surface(rr(1)+R*xx,rr(2)+R*yy,rr(3)+R*zz);
+    sp_hand = surface(obj_pos(1)+R*xx,obj_pos(2)+R*yy,obj_pos(3)+R*zz);
     
     img = imread(body(obj_id));
-    % Set it on SUN
     set(sp_hand,'facecolor','texture',...
         'cdata',im2double(imrotate(img,180)),...
         'edgecolor','none');
