@@ -178,9 +178,9 @@ function [traj, delta_v] = ...
     end
     
     %Hyperbola plot
-    plot3(hyp(:,1),hyp(:,2),hyp(:,3),'k-')
+    plot3(hyp(:,1),hyp(:,2),hyp(:,3),'b-')
     
     %Output arguments
-    traj = hyp; %flip?
+    traj = flip(hyp);
     delta_v = v_hyp - vc;
 end    

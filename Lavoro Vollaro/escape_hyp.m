@@ -186,7 +186,7 @@ function [traj, delta_v] = escape_hyp(obj_id, orbit,...
     end
     
     %% Hyperbola plot
-    plot3(hyp(:,1),hyp(:,2),hyp(:,3),'k-')
+    plot3(hyp(:,1),hyp(:,2),hyp(:,3),'m-')
     
     %% Output arguments
     traj = hyp;
