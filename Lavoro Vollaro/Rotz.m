@@ -1,6 +1,7 @@
 function mat = Rotz(theta)
 % ROTZ(theta) describes a rotation of the Euler angle THETA around
 %   the Z-axis.
+%
 %   mat = ROTZ(theta) return the rotation matrix.
 %
 %   theta - angle of rotation [rad]
@@ -9,4 +10,5 @@ function mat = Rotz(theta)
     mat = [cos(theta),-sin(theta),0;...
            sin(theta),cos(theta),0;...
            0,0,1];
+       
 end
