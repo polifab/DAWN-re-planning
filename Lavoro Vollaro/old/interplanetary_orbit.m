@@ -1,15 +1,30 @@
-function yy = orbitAttempt
-%   computes the orbit of a spacecraft by using rkf45 to 
-%   numerically integrate Equation 2.22.
+function orb = interplanetary_orbit(obj_id,arr_days)
+%   INTERPLANETARY_ORBIT computes the orbit of a spacecraft around a main
+%   body, by using rkf45 to numerically integrate Equation 2.22.
 % 
 %   It also plots the orbit and computes the times at which the maximum
 %   and minimum radii occur and the speeds at those times.
 % 
+%   obj_id  - identifier of the main body in the hypothesis of 2-body
+%             problem:
+%                1 = Mercury
+%                2 = Venus
+%                3 = Earth
+%                4 = Mars
+%                5 = Jupiter
+%                6 = Saturn
+%                7 = Uranus
+%                8 = Neptune
+%                9 = Pluto
+%               10 = Vesta
+%               11 = Ceres
+%               12 = Sun
+%   arr_days  - days needed for the spacecraft to arrive at destination
 %   hours     - converts hours to seconds
 %   G         - universal gravitational constant (km^3/kg/s^2)
 %   m1        - planet mass (kg)
 %   m2        - spacecraft mass (kg)
-%   E_mu       - gravitational parameter (km^3/s^2)
+%   obj_mu      - gravitational parameter (km^3/s^2)
 %   R         - planet radius (km)
 %   r0        - initial position vector (km)
 %   v0        - initial velocity vector (km/s)
@@ -34,41 +49,67 @@ function yy = orbitAttempt
 % User M-function required:   rkf45
 % User subfunctions required: rates, output
 
-%     clc; close all; clear all
-
-    hours = 3600;
-    G     = 6.6742e-20;
+    %% Constants
+    
+    hours = 3600; %[s] days = 24*60*60;
+    G     = 6.6742e-20; %[N m^2/kg^2]
 
     %% Input data:
-    %m1: Sun
-    m1 = 1.989*10^30;
-    R  = 696.340;
-    %m2: Spacecraft
-    m2 = 1000;
     
-    r0 = [1.49707e+08  8.9236e+06  -158.369];
-%     r0 = [1.4960e+08, 1.0203e+07, -181.1068];
-%     v0 = [-30.1843, 2.1960, -0.0000];
-%     v0 = [0, 7.78548, 0];
-    v0 = [-8.18054, 32.5673, 1.0630]; %from Earth_Mars.m
+    masses = 10^24 * [0.330
+                      4.87
+                      5.97
+                      0.642
+                      1898
+                      568
+                      86.8
+                      102
+                      0.0146
+                      0.0002589
+                      0.000947
+                      1989100]; %[kg]
+    radii = [2439.5
+             6052 
+             6378
+             3396
+             71492
+             60268
+             25559
+             24764
+             1185
+             262.7
+             476.2
+             695508]; %[km]   
+    
+    %Sun
+    m1 = 1.989*10^30; %[kg]
+    R  = 696.340; %[km]
+    
+    %Spacecraft
+    m2 = 1000; %[kg]
+    
+    r0 = [1.49707e+08  8.9236e+06  -158.369]; %[km,km,km]
+    v0 = [-8.18054, 32.5673, 1.0630]; %[km/s,km/s,km/s] from Earth_Mars.m
 
-    t0 = 0;
+    t0 = 0; %[s]
     %tf obtained as tof from Earth_Mars.m
-    tf = 509*24*hours;
+    tf = 509*24*hours; %[s] arr_days*24*hours o arr_days*days
 
+    
+    obj_mu   = G*(m1 + m2); %[km^3/s^2]
     %% Numerical integration:
-    E_mu   = G*(m1 + m2);
+    
     y0    = [r0 v0]';
     [t,y] = rkf45(@rates, [t0 tf], y0);
 
-    %...Output the results:
+    %% Output the results:
     output
     
-    yy = y;
+    orb = y;
 
     return 
 
-    % ~~~~~~~~~~~~~~~~~~~~~~~~
+    %% ~~~~~~~~~~~~~~~~~~~~~~~~
     function dydt = rates(t,f)
     %{
       This function calculates the acceleration vector using Equation 2.22
@@ -93,16 +134,16 @@ function yy = orbitAttempt
 
         r    = norm([x y z]);
 
-        ax   = -E_mu*x/r^3;
-        ay   = -E_mu*y/r^3;
-        az   = -E_mu*z/r^3;
+        ax   = -obj_mu*x/r^3;
+        ay   = -obj_mu*y/r^3;
+        az   = -obj_mu*z/r^3;
 
         dydt = [vx vy vz ax ay az]';    
     end %rates
     % ~~~~~~~~~~~~~~~~~~~~~~~
 
 
-    % ~~~~~~~~~~~~~~~~~~~~~~~
+    %% ~~~~~~~~~~~~~~~~~~~~~~~
     function output
     %{
       This function computes the maximum and minimum radii, the times they
@@ -130,7 +171,7 @@ function yy = orbitAttempt
         v_at_rmax   = norm([y(imax,4) y(imax,5) y(imax,6)]);
         v_at_rmin   = norm([y(imin,4) y(imin,5) y(imin,6)]);
 
-        %...Output to the command window:
+        %% Output to the command window:
         fprintf('\n\n--------------------------------------------------------\n')
         fprintf('\n Spacecraft Orbit\n')
         fprintf(' %s\n', datestr([2007,9,27,0,0,0]))
@@ -149,38 +190,18 @@ function yy = orbitAttempt
         fprintf('\n The speed at that point is %g km/s\n', v_at_rmax)
         fprintf('\n--------------------------------------------------------\n\n')
 
-        %...Plot the results:
-        %   Draw the planet
+        %% Plot the results:
+        
+        %Draw the planet
         [xx, yy, zz] = sphere(100);
         surf(R*xx, R*yy, R*zz);
-%         colormap(light_gray)
-%         caxis([-R/100 R/100])
-%         shading interp
-
-        %   Draw and label the X, Y and Z axes
-%         line([0 2*R],   [0 0],   [0 0]); text(2*R,   0,   0, 'X')
-%         line(  [0 0], [0 2*R],   [0 0]); text(  0, 2*R,   0, 'Y')
-%         line(  [0 0],   [0 0], [0 2*R]); text(  0,   0, 2*R, 'Z')
-
-        %   Plot the orbit, draw a radial to the starting point
-        %   and label the starting point (o) and the final point (f)
+        
+        %Plot the orbit, draw a radial to the starting point
+        %and label the starting point (o) and the final point (f)
         hold on
         plot3(  y(:,1),    y(:,2),    y(:,3),'k')
-%         line([0 r0(1)], [0 r0(2)], [0 r0(3)])
-        text(   y(1,1),    y(1,2),    y(1,3), 'o')
-        text( y(end,1),  y(end,2),  y(end,3), 'f')
 
-        %   Select a view direction (a vector directed outward from the origin) 
-        view([1,1,.4])
-
-        %   Specify some properties of the graph
-        grid on
-%         axis equal
-        xlabel('km')
-        ylabel('km')
-        zlabel('km')
-
-        % ~~~~~~~~~~~~~~~~~~~~~~~
+        %% ~~~~~~~~~~~~~~~~~~~~~~~
         function map = light_gray
         %{
           This function creates a color map for displaying the planet as light

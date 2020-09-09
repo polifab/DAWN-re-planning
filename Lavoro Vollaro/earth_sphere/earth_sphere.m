@@ -108,18 +108,15 @@ if nargout == 0
     surface(x,y,z,props,'parent',cax);
     colormap(topomap1)
 
-% Replace the calls to surface and colormap with these lines if you do 
-% not want the Earth's topography displayed.
-%     surf(x,y,z,'parent',cax)
-%     shading flat
-%     colormap gray
     
-    % Refine figure
-    axis equal
-    xlabel(['X [' units ']'])
-    ylabel(['Y [' units ']'])
-    zlabel(['Z [' units ']'])
-    view(127.5,30)
+    [xx,yy,zz] = sphere(100);
+    plop = surface(R*xx,R*yy,R*zz)
+    topoSUN = imread('moon.jpg');
+    % Set it on SUN
+    set(plop,'facecolor','texture',...
+    'cdata',im2double(topoSUN),...
+    'edgecolor','none');
+    
 else
     xx = x; yy = y; zz = z;
 end

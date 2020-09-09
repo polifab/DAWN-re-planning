@@ -173,21 +173,21 @@ function Earth_park(rr)
         %   Plot the orbit, draw a radial to the starting point
         %   and label the starting point (o) and the final point (f)
         hold on
-        fprintf('y: [%g , %g , %g ] \n',y(1,1),y(1,2),y(1,3))
+%         fprintf('y: [%g , %g , %g ] \n',y(1,1),y(1,2),y(1,3))
         plot3(  rr(1)+y(:,1),    rr(2)+y(:,2),    rr(3)+y(:,3),'r','LineWidth',1)
 %         line([0 r0(1)], [0 r0(2)], [0 r0(3)])
-        text(   rr(1)+y(1,1),    rr(2)+y(1,2),    rr(3)+y(1,3), 'oo')
-        text( rr(1)+y(end,1),  rr(2)+y(end,2),  rr(3)+y(end,3), 'ff')
+%         text(   rr(1)+y(1,1),    rr(2)+y(1,2),    rr(3)+y(1,3), 'oo')
+%         text( rr(1)+y(end,1),  rr(2)+y(end,2),  rr(3)+y(end,3), 'ff')
 
         %   Select a view direction (a vector directed outward from the origin) 
 %         view([1,1,.4])
 
         %   Specify some properties of the graph
-        grid on
-        axis equal
-        xlabel('x [km]')
-        ylabel('y [km]')
-        zlabel('z [km]')
+%         grid on
+%         axis equal
+%         xlabel('x [km]')
+%         ylabel('y [km]')
+%         zlabel('z [km]')
 
     end %output
     % ~~~~~~~~~~~~~~~~~~~~~~~
