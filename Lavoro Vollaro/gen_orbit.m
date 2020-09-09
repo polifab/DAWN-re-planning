@@ -3,6 +3,7 @@ function [dep_r,dep_v,arr_r,arr_v,flight,orb_oe] = ...
 % GEN_ORBIT(dep_id, arr_id, dep_time, arr_time) generates info about
 %   the interplanetary orbit of a 1000kg spacecraft departing from 
 %   DEP_ID at DEP_TIME and arriving to ARR_ID at ARR_TIME.
+%
 %   [dep_r,dep_v,arr_r,arr_v,flight,orb_oe] = GEN_ORBIT(...)
 %   returns the starting and final position DEP_R, ARR_R
 %   of the spacecraft (corresponding to the main bodies position
@@ -11,18 +12,18 @@ function [dep_r,dep_v,arr_r,arr_v,flight,orb_oe] = ...
 %   FLIGHT and the orbital elements ORB_OE of the trajectory.
 %   
 %    dep_id,arr_id - departure/arrival body identifier:
-%                   1 = Mercury
-%                   2 = Venus
-%                   3 = Earth
-%                   4 = Mars
-%                   5 = Jupiter
-%                   6 = Saturn
-%                   7 = Uranus
-%                   8 = Neptune
-%                   9 = Pluto
-%                  10 = Vesta
-%                  11 = Ceres
-%                  12 = Sun
+%                       1 = Mercury
+%                       2 = Venus
+%                       3 = Earth
+%                       4 = Mars
+%                       5 = Jupiter
+%                       6 = Saturn
+%                       7 = Uranus
+%                       8 = Neptune
+%                       9 = Pluto
+%                      10 = Vesta
+%                      11 = Ceres
+%                      12 = Sun
 %
 %     dep_time     - array specifying time of departure with elements 
 %                    (in this order):
@@ -53,20 +54,22 @@ function [dep_r,dep_v,arr_r,arr_v,flight,orb_oe] = ...
 %                    TA   = true anomaly (rad)
 %                    a    = semimajor axis (km)
 % 
-%     flight          - time of flight from planet 1 to planet 2 (days)
-% 
-% 
+%     flight       - time of flight from planet 1 to planet 2 (days)
+%
 %     vinf1, vinf2 - hyperbolic excess velocities at departure
-%                  and arrival (km/s)
+%                    and arrival (km/s)
+%
 %     dep_r        - position of the main body at departure
+%
 %     dep_v        - velocity of the spacecraft at departure from
 %                    origin SOI
 %     arr_r        - position of the main body at arrival
+%
 %     arr_v        - velocity of the spacecraft at arrival in the 
 %                    destination SOI
 % 
-%     User M-functions required: interplanetary, coe_from_sv,
-%                              month_planet_names
+% User M-functions required: interplanetary, coe_from_sv,
+%                             month_planet_names
 
     %% Argument validation
     validateattributes(dep_time,{'double'},{'size',[1 6]})
@@ -75,7 +78,7 @@ function [dep_r,dep_v,arr_r,arr_v,flight,orb_oe] = ...
     %% Data
     %Sun mu
     global mu
-    deg = pi/180;
+    deg = pi/180; %for angle conversions
 
     % Departure
     planet_id = dep_id;
@@ -117,6 +120,7 @@ function [dep_r,dep_v,arr_r,arr_v,flight,orb_oe] = ...
     V1  = trajectory(1,1:3);
     V2  = trajectory(1,4:6);
 
+    %time of flight in Julian days
     tof = jd2 - jd1;
 
     % Use Algorithm 4.2 to find the orbital elements of the
