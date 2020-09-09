@@ -7,6 +7,7 @@ function body_sphere(obj_id,obj_pos)
 %   obj_pos  - (x,y,z) coordinates of target body, wrt the Sun
 %
 
+    %% Constants
     body = ["mercury.jpg" 
             "venus.jpg" 
             "earth.jpg" 
@@ -35,11 +36,14 @@ function body_sphere(obj_id,obj_pos)
          
 	R = radii(obj_id); %[km]
     
+    %% Sphere creation
     [xx,yy,zz] = sphere(100);
     sp_hand = surface(obj_pos(1)+R*xx,obj_pos(2)+R*yy,obj_pos(3)+R*zz);
     
+    %% Surface change
     img = imread(body(obj_id));
     set(sp_hand,'facecolor','texture',...
         'cdata',im2double(imrotate(img,180)),...
         'edgecolor','none');
+    
 end
