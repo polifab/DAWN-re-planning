@@ -1,4 +1,4 @@
-function orb = intpl_orbit(arr_days,r_init,v_init)
+function orb = intpl_orbit(arr_days, r_init, v_init)
 %   INTERPLANETARY_ORBIT(arr_days, r_init, v_init) computes the 
 %   interplanetary orbit a spacecraft of 1000kg would travel
 %   around the Sun in ARR_DAYS days, starting at position R_INIT
@@ -21,13 +21,9 @@ function orb = intpl_orbit(arr_days,r_init,v_init)
 
     %% Constants
     global mu
-    hours = 3600; %[s]
-    Sun_radius = 695508; %[km]   
+    hours = 3600; %[s]  
 
     %% Input data:
-    
-    %Sun
-    R  = Sun_radius; %[km]
     
     r0 = r_init; %[km,km,km]
     v0 = v_init; %[km/s,km/s,km/s]

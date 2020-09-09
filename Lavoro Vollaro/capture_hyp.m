@@ -1,6 +1,6 @@
 function [traj, delta_v] = ...
-  capture_hyp(goal_id, orbit, arr_time, park_r, park_i, origin_coe, v_in)
-% ESCAPE_HYP(goal_id, orbit, arr_time, park_r,park_i, origin_coe, v_in)
+  capture_hyp(goal_id, orbit, arr_time, park_r, origin_coe, v_in)
+% ESCAPE_HYP(goal_id, orbit, arr_time, park_r, park_i, origin_coe, v_in)
 %   computes the trajectory the spacecraft will follow
 %   to enter the sphere of influence of object GOAL_ID at time
 %   ARR_TIME and to position itself into a circular parking orbit
@@ -65,28 +65,28 @@ function [traj, delta_v] = ...
     %% Data
     global mu
 
-    masses = 10^24 * [0.330
-                      4.87
-                      5.97
-                      0.642
-                      1898
-                      568
-                      86.8
-                      102
-                      0.0146
-                      0.0002589
-                      0.000947
+    masses = 10^24 * [0.330104
+                      4.86732
+                      5.97219
+                      0.641693
+                      1898.13
+                      568.319
+                      86.8103
+                      102.410
+                      0.01309
+                      0.000259
+                      0.0009393
                       1989100]; %[kg]
 
-	radii = [2439.5
-             6052 
-             6378
-             3396
-             71492
-             60268
-             25559
-             24764
-             1185
+	radii = [2439.7
+             6051.8 
+             6371
+             3389.5
+             69911
+             58232
+             25362
+             24622
+             1151
              262.7
              476.2
              695508]; %[km] 
@@ -100,10 +100,10 @@ function [traj, delta_v] = ...
                  2870658186
                  4498396441
                  5906440628
-                 491593189
-                 423690250];%[km]
+                 353649000000
+                 413690250];%[km]
     
-    G    = 6.6742e-20; %[km^3/kg/s^2]
+    G = 6.6742e-20; %[km^3/kg/s^2]
     
     %% Input data
     %SOI: (m_planet/m_Sun)^(2/5) * distance_from_Sun
@@ -112,6 +112,8 @@ function [traj, delta_v] = ...
     
     pl_mu = G * masses(goal_id); %[km^3/s^2]
     pl_radius = radii(goal_id); %[km]
+    
+    park_i = origin_coe(4);
 
     %% Needed variables
     [~, pl_r0, v_arr, ~] =...

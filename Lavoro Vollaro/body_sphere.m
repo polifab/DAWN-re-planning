@@ -4,6 +4,7 @@ function body_sphere(obj_id,obj_pos)
 %   Available: all solar planets, Pluto, Vesta, Ceres, Sun.
 %
 %   obj_id   - numeric identifier of the target body (1-12)
+%
 %   obj_pos  - (x,y,z) coordinates of target body, wrt the Sun
 %
 
@@ -21,15 +22,15 @@ function body_sphere(obj_id,obj_pos)
             "ceres.jpg" 
             "sun.jpg"];
         
-    radii = [2439.5
-             6052 
-             6378
-             3396
-             71492
-             60268
-             25559
-             24764
-             1185
+    radii = [2439.7
+             6051.8 
+             6371
+             3389.5
+             69911
+             58232
+             25362
+             24622
+             1151
              262.7
              476.2
              695508]; %[km]

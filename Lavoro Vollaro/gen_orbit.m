@@ -1,5 +1,5 @@
-function [dep_r,dep_v,arr_r,arr_v,flight,orb_oe] = ...
-                        gen_orbit(dep_id,arr_id, dep_time, arr_time)
+function [dep_r, dep_v, arr_r, arr_v, flight, orb_oe] = ...
+                        gen_orbit(dep_id, arr_id, dep_time, arr_time)
 % GEN_ORBIT(dep_id, arr_id, dep_time, arr_time) generates info about
 %   the interplanetary orbit of a 1000kg spacecraft departing from 
 %   DEP_ID at DEP_TIME and arriving to ARR_ID at ARR_TIME.

@@ -1,5 +1,5 @@
 function [traj, delta_v] = escape_hyp(obj_id, orbit,...
-                               dep_time, park_r, park_i, goal_coe, v_out)
+                               dep_time, park_r, goal_coe, v_out)
 % ESCAPE_HYP(planet_id,goal_id,orbit,dep_time,park_r,park_i,goal_coe,v_out)
 %   computes the trajectory the spacecraft will follow
 %   to escape the sphere of influece of the object OBJ_ID AT
@@ -64,28 +64,28 @@ function [traj, delta_v] = escape_hyp(obj_id, orbit,...
     %% Constants
     global mu
 
-    masses = 10^24 * [0.330
-                      4.87
-                      5.97
-                      0.642
-                      1898
-                      568
-                      86.8
-                      102
-                      0.0146
-                      0.0002589
-                      0.000947
+    masses = 10^24 * [0.330104
+                      4.86732
+                      5.97219
+                      0.641693
+                      1898.13
+                      568.319
+                      86.8103
+                      102.410
+                      0.01309
+                      0.000259
+                      0.0009393
                       1989100]; %[kg]
 
-	radii = [2439.5
-             6052 
-             6378
-             3396
-             71492
-             60268
-             25559
-             24764
-             1185
+	radii = [2439.7
+             6051.8 
+             6371
+             3389.5
+             69911
+             58232
+             25362
+             24622
+             1151
              262.7
              476.2
              695508]; %[km] 
@@ -99,10 +99,10 @@ function [traj, delta_v] = escape_hyp(obj_id, orbit,...
                  2870658186
                  4498396441
                  5906440628
-                 491593189
-                 423690250];%[km]
+                 353649000000
+                 413690250];%[km]
     
-    G    = 6.6742e-20; %[km^3/kg/s^2]
+    G = 6.6742e-20; %[km^3/kg/s^2]
     
     %% Input data
     %SOI: (m_planet/m_Sun)^(2/5) * distance_from_Sun
@@ -111,6 +111,8 @@ function [traj, delta_v] = escape_hyp(obj_id, orbit,...
     
     pl_mu = G * masses(obj_id); %[km^3/s^2]
     pl_radius = radii(obj_id); %[km]
+    
+    park_i = goal_coe(4);
 
     %% Needed variables
     [~, pl_r0, v_dep, ~] =...
