@@ -1,8 +1,19 @@
-function [trajectory, delta_v] = ...
-   capture_hyp(goal_id, orbit, arr_time, park_r,park_i, origin_coe, v_in)
-% ESCAPE_HYP computes the trajectory the spacecraft will follow
-%   to enter the desired planet's Sphere of Influence and 
-%   position itself into a circular parking orbit.
+function [traj, delta_v] = ...
+  capture_hyp(goal_id, orbit, arr_time, park_r, park_i, origin_coe, v_in)
+% ESCAPE_HYP(goal_id, orbit, arr_time, park_r,park_i, origin_coe, v_in)
+%   computes the trajectory the spacecraft will follow
+%   to enter the sphere of influence of object GOAL_ID at time
+%   ARR_TIME and to position itself into a circular parking orbit
+%   of radius PARK_R and inclination PARK_I.
+%
+%   It uses the last points of the arrival interplanetary orbit 
+%   (computed via the patched conics method) stored in ORBIT to generate
+%   a trajectory with orbital elements ORIGIN_COE that will allow it
+%   to reach velocity V_IN at the entrance of the body's SOI.
+%
+%   [traj, delta_v] = CAPTURE_HYP(...) returns the computed capture
+%   trajectory TRAJ and the needed change of velocity DELTA_V.
+%
 %   Options for the Sun are not contemplated since that would be
 %   the general case of an interplanetary trajectory.
 %
@@ -31,7 +42,7 @@ function [trajectory, delta_v] = ...
 %                     minute       - range: 0 - 60
 %                     second       - range: 0 - 60
 %
-%   park_r   - radius of the circular parking orbit around planet
+%   park_r   - radius of the circular parking orbit around the body
 %
 %   origin_coe - classical orbital elements of the origin interplanetary
 %                 orbit:
@@ -43,6 +54,7 @@ function [trajectory, delta_v] = ...
 %                w    = argument of perigee (rad)
 %                TA   = true anomaly (rad)
 %                a    = semimajor axis (km)
+%
 %   v_in - velocity of the spacecraft at the entry into the SOI
 %          of the planet
 
@@ -93,6 +105,7 @@ function [trajectory, delta_v] = ...
     
     G    = 6.6742e-20; %[km^3/kg/s^2]
     
+    %% Input data
     %SOI: (m_planet/m_Sun)^(2/5) * distance_from_Sun
     pl_SOI = (masses(goal_id)/masses(12))^(2/5)...
         * distances(goal_id); %[km]
@@ -105,7 +118,7 @@ function [trajectory, delta_v] = ...
         planet_elements_and_sv(goal_id, arr_time(1),arr_time(2),...
                         arr_time(3),arr_time(4),arr_time(5),arr_time(6));
 
-    vinf = norm(v_in-v_arr); %sqrt(dot(v2- v_arrival, v2 - v_arrival));
+    vinf = norm(v_in-v_arr);
 
     rp = pl_radius + park_r;
     e = 1 + rp*vinf^2/pl_mu;
@@ -157,7 +170,7 @@ function [trajectory, delta_v] = ...
     hyp = [];
     for i = 1:length(t)
         point = pl_r0' + Rotx(incl)*Rotx(park_i)*Rotz(out_angle)*Rotz(beta+2*half_delta)*...
-                    ([xh_l(i); yh(i);0] + [-(a+rp);0;0]);
+                    ([xh_l(i); yh(i);0] + [-(rp-a);0;0]);
         hyp = cat(1,hyp,point');
         if norm(hyp(size(hyp,1),:)-hyp(1,:))>= pl_SOI
             break;
@@ -167,6 +180,7 @@ function [trajectory, delta_v] = ...
     %Hyperbola plot
     plot3(hyp(:,1),hyp(:,2),hyp(:,3),'k-')
     
-    trajectory = hyp;
+    %Output arguments
+    traj = hyp; %flip?
     delta_v = v_hyp - vc;
 end    
