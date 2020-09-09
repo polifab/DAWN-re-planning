@@ -1,13 +1,14 @@
 function orb = park_orbit(obj_id,pos,radius,incl)
 % PARK_ORBIT(obj_id, pos, dist, incl) computes the circular parking
-%   orbit of a spacecraft around OBJ_ID having the center in POS
+%   orbit of a spacecraft around OBJ_ID having the center in POS,
 %   radius RADIUS and inclination INCL.
+%
 %   orb = PARK_ORBIT(...) returns the points composing the orbit.
 %
 %   It uses rkf45 to numerically integrate Equation 2.22 in
 %   "Orbital Mechanics for Engineering Students" - Howard D. Curtis.
 %
-%   obj_id      - identifier of the main body in the hypothesis of 2-body
+%   obj_id   - identifier of the main body in the hypothesis of 2-body
 %                 problem:
 %                1 = Mercury
 %                2 = Venus
@@ -21,11 +22,14 @@ function orb = park_orbit(obj_id,pos,radius,incl)
 %               10 = Vesta
 %               11 = Ceres
 %               12 = Sun
+%
 %   pos       - position of the planet in heliocentric components
+%
 %   radius    - radius of the circular parking orbit
+%
 %   incl      - inclination of the parking orbit
 %
-% User M-function required:   rkf45
+% User M-function required:   rkf45, body_sphere
 % User subfunctions implemented: rates, output
     
     %% Constants
@@ -100,7 +104,7 @@ function orb = park_orbit(obj_id,pos,radius,incl)
     %% Output the results:
     output
     
-    orb = y;
+    orb = pos + y(:,1:3);
 
     return
 
@@ -141,47 +145,23 @@ function orb = park_orbit(obj_id,pos,radius,incl)
     %% ~~~~~~~~~~~~~~~~~~~~~~~
     function output
     %{
-      This function computes the maximum and minimum radii, the times they
-      occur and and the speed at those times. It prints those results to
+      This function prints computation results to
       the command window and plots the orbit.
-
-      r         - magnitude of the position vector at the times in t
-      imax      - the component of r with the largest value
-      rmax      - the largest value of r
-      imin      - the component of r with the smallest value
-      rmin      - the smallest value of r
-      v_at_rmax - the speed where r = rmax
-      v_at_rmin - the speed where r = rmin
-
-      User subfunction required: light_gray
     %}
-        
-        for i = 1:length(t)
-            r(i) = norm([y(i,1) y(i,2) y(i,3)]);
-        end
-
-        [rmax, imax] = max(r);
-        [rmin, imin] = min(r);
-
-        v_at_rmax   = norm([y(imax,4) y(imax,5) y(imax,6)]);
-        v_at_rmin   = norm([y(imin,4) y(imin,5) y(imin,6)]);
 
         %% Output to the command window:
         fprintf('\n\n--------------------------------------------------------\n')
         fprintf('\n %s parking orbit\n',planets(obj_id))
+        fprintf('\n Radius of the circular orbit: %g (km)\n', R+radius)
+        fprintf('\n Inclination of the orbit: %4.2f (°)\n', rad2deg(incl))
         fprintf('\n The initial position is [%g, %g, %g] (km).',...
-                                                             r0(1), r0(2), r0(3))
+                                                 r0(1), r0(2), r0(3))
         fprintf('\n   Magnitude = %g km\n', norm(r0))
         fprintf('\n The initial velocity is [%g, %g, %g] (km/s).',...
-                                                             v0(1), v0(2), v0(3))
+                                                     v0(1), v0(2), v0(3))
         fprintf('\n   Magnitude = %g km/s\n', norm(v0))
-        fprintf('\n Initial time = %g h.\n Final time   = %g h.\n',0,tf/hours) 
-        fprintf('\n The minimum altitude is %g km at time = %g h.',...
-                    rmin-R, t(imin)/hours)
-        fprintf('\n The speed at that point is %g km/s.\n', v_at_rmin)
-        fprintf('\n The maximum altitude is %g km at time = %g h.',...
-                    rmax-R, t(imax)/hours)
-        fprintf('\n The speed at that point is %g km/s\n', v_at_rmax)
+        fprintf('\n Initial time = %g h.\n Final time   = %g h.\n',0,...
+                                                            tf/hours) 
         fprintf('\n--------------------------------------------------------\n\n')
 
         %% Figure plot
