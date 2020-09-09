@@ -1,21 +1,23 @@
-function [traj, delta_v] = escape_hyp(obj_id, goal_id, orbit,...
+function [traj, delta_v] = escape_hyp(obj_id, orbit,...
                                dep_time, park_r, park_i, goal_coe, v_out)
 % ESCAPE_HYP(planet_id,goal_id,orbit,dep_time,park_r,park_i,goal_coe,v_out)
 %   computes the trajectory the spacecraft will follow
 %   to escape the sphere of influece of the object OBJ_ID AT
-%   DEP_TIME to travel towards the object GOAL_ID.
-%   It uses the first point of the interplanetary orbit (computed
-%   via the patched conics method) stored in ORBIT and the
+%   DEP_TIME.
+%
+%   It uses the first points of the departing interplanetary orbit 
+%   (computed via the patched conics method) stored in ORBIT and the
 %   parking orbit radius PARK_R and inclination PARK_I to generate
 %   a trajectory with orbital elements GOAL_COE that will allow it
 %   to reach velocity V_OUT at the end of the travel.
-%   [traj, delta_v] = ESCAPE_HYP(...) return the computed escape
+%
+%   [traj, delta_v] = ESCAPE_HYP(...) returns the computed escape
 %   trajectory TRAJ and the needed change of velocity DELTA_V.
 %
 %   Options for the Sun are not contemplated since that would be
 %   the general case of an interplanetary trajectory.
 %
-%   obj_id, goal_id   - identifier of the origin/destination planet:
+%   obj_id  - identifier of the origin planet:
 %                            1 = Mercury
 %                            2 = Venus
 %                            3 = Earth
@@ -39,6 +41,7 @@ function [traj, delta_v] = escape_hyp(obj_id, goal_id, orbit,...
 %                     hour         - range: 0 - 23
 %                     minute       - range: 0 - 60
 %                     second       - range: 0 - 60
+%
 %   park_r   - radius of the circular parking orbit around origin planet
 %
 %   goal_coe - classical orbital elements of the target interplanetary
@@ -51,6 +54,7 @@ function [traj, delta_v] = escape_hyp(obj_id, goal_id, orbit,...
 %                w    = argument of perigee (rad)
 %                TA   = true anomaly (rad)
 %                a    = semimajor axis (km)
+%
 %   v_out - escape velocity from the object SOI
 
     %% Argument validation
@@ -113,9 +117,10 @@ function [traj, delta_v] = escape_hyp(obj_id, goal_id, orbit,...
         planet_elements_and_sv(obj_id,dep_time(1),dep_time(2),...
                         dep_time(3),dep_time(4),dep_time(5),dep_time(6));
    
-    V_dep = norm(v_dep); %[km/s]
+    V_dep = norm(v_dep); %[km/s], norm of departing velocity
 
-    vinf = v_out - V_dep; %[km/s]
+    %v-infinity of the departure hyperbola
+    vinf = norm(v_out - V_dep); %[km/s]
 
     %Hyperbola characteristics
     rp = pl_radius+park_r; %[km], periapsis
@@ -154,7 +159,7 @@ function [traj, delta_v] = escape_hyp(obj_id, goal_id, orbit,...
         cosf = (e-cosh(F))/(e*cosh(F)-1);
         f = acos(cosf); %True anomaly
         coe = [h, e, RA, incl, w, f];
-        [r,~] = sv_from_coe(coe,pl_mu);
+        [r,~] = sv_from_coe(coe,pl_mu); %spacecraft position
         rr = cat(1,rr,r);
     end
 
@@ -180,9 +185,10 @@ function [traj, delta_v] = escape_hyp(obj_id, goal_id, orbit,...
         end
     end
     
-    %% Plot
-    plot3(hyp(:,1),hyp(:,2),hyp(:,3),'m-')
+    %% Hyperbola plot
+    plot3(hyp(:,1),hyp(:,2),hyp(:,3),'k-')
     
+    %% Output arguments
     traj = hyp;
     delta_v = v_b - v_park;
 end
