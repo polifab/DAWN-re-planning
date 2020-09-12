@@ -37,7 +37,7 @@ function orb = intpl_orbit(arr_days, r_init, v_init)
     
     %Initial condition: position, velocity
     y0    = [r0 v0]';
-    [t,y] = rkf45(@rates, [t0 tf], y0,1.e-15);
+    [t,y] = rkf45(@rates, [t0 tf], y0, 1.e-20);
 
     %% Output the results:
     output

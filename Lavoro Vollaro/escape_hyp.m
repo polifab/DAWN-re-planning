@@ -167,7 +167,8 @@ function [traj, delta_v] = escape_hyp(obj_id, orbit,...
 
     %Angle of orientation of escape trajectory, to be aligned with
     %the escape velocity vector
-    out_dir = orbit(2,1:3)-orbit(1,1:3);
+    out_dir = Rotz(goal_coe(3))'*Rotx(park_i)'*...
+        (orbit(2,1:3)-orbit(1,1:3))'; %exit vector: (2,1:3)<-(1,1:3)
     out_angle = deg2rad(atan2d_0_360(out_dir(2),out_dir(1)));
 
     t = 0:0.1:5;
@@ -179,8 +180,9 @@ function [traj, delta_v] = escape_hyp(obj_id, orbit,...
 
     hyp = [];
     for i = 1:length(t)
-        point = pl_r0' + Rotx(incl)*Rotx(park_i)*Rotz(out_angle)*...
-            Rotz(beta)*([xh_r(i); -yh(i);0] + [-(a+rp);0;0]);
+        point = pl_r0' + Rotz(goal_coe(3))*Rotx(park_i)*...
+                    Rotz(out_angle)*Rotz(beta)*...
+                    ([xh_l(i); -yh(i);0] + [-(rp-a);0;0]);
         hyp = cat(1,hyp,point');
         if norm(hyp(size(hyp,1),:)-hyp(1,:))>= pl_SOI
             break;

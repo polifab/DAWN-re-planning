@@ -1,4 +1,4 @@
-function orb = park_orbit(obj_id, pos, radius, incl)
+function orb = park_orbit(obj_id, pos, radius, incl, raan)
 % PARK_ORBIT(obj_id, pos, dist, incl) computes the circular parking
 %   orbit of a spacecraft around OBJ_ID having the center in POS,
 %   radius RADIUS and inclination INCL.
@@ -85,11 +85,11 @@ function orb = park_orbit(obj_id, pos, radius, incl)
     m2 = 1000; %[kg]
     
     obj_mu    = G*(m1 + m2); %[km^3/s^2]
-    r0 = (Rotx(incl)*[R+radius; 0; 0])'; %[km,km,km]
+    r0 = (Rotz(raan)*Rotx(incl)*[R+radius; 0; 0])'; %[km,km,km]
     
     %Parking orbit
-    Park_v0 = sqrt(obj_mu/r0(1)); %[km/s]
-    v0 = (Rotx(incl)*[0; Park_v0; 0])'; %[km/s,km/s,km/s]
+    Park_v0 = sqrt(obj_mu/(R+radius)); %[km/s]
+    v0 = (Rotz(raan)*Rotx(incl)*[0; Park_v0; 0])'; %[km/s,km/s,km/s]
 
     %Time
     t0 = 0; %[s]

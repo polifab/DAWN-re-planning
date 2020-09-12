@@ -139,9 +139,9 @@ function [traj, delta_v] = ...
     beta = acos(1/e);
 
     h = Delta*vinf;
-    RA = deg2rad(origin_coe(3));
-    incl = deg2rad(origin_coe(4));
-    w = deg2rad(origin_coe(5));
+    RA = origin_coe(3); %[rad]
+    incl = origin_coe(4); %[rad]
+    w = origin_coe(5); %[rad]
 
     n = sqrt(pl_mu/a^3);
     
@@ -159,8 +159,9 @@ function [traj, delta_v] = ...
     end
 
     %Angle of orientation of escape trajectory
-    out_dir = orbit(2,1:3)-orbit(1,1:3);
-    out_angle = deg2rad(atan2d_0_360(out_dir(2),out_dir(1)));
+    in_dir = Rotz(origin_coe(3))'*Rotx(park_i)'*...
+        (orbit(1,1:3)-orbit(2,1:3))'; %entry vector: (end-1,1:3)<-(end,1:3)
+    in_angle = deg2rad(atan2d_0_360(in_dir(2),in_dir(1)));
 
     t = 0:0.1:5;
 
@@ -168,11 +169,12 @@ function [traj, delta_v] = ...
     xh_l = -a*cosh(t);
     xh_r = a*cosh(t);
     yh = b*sinh(t);
-
+    
     hyp = [];
     for i = 1:length(t)
-        point = pl_r0' + Rotx(incl)*Rotx(park_i)*Rotz(out_angle)*Rotz(beta+2*half_delta)*...
-                    ([xh_l(i); yh(i);0] + [-(rp-a);0;0]);
+        point = pl_r0' + Rotz(origin_coe(3))*Rotx(park_i)*...
+                    Rotz(in_angle)*Rotz(2*half_delta+beta)*...
+                    ([xh_l(i); -yh(i);0] + [-(rp-a);0;0]);
         hyp = cat(1,hyp,point');
         if norm(hyp(size(hyp,1),:)-hyp(1,:))>= pl_SOI
             break;
