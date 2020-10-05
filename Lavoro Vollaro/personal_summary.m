@@ -50,14 +50,11 @@ plot_orbit.m:
 
 
                                 TODO:
+- check SOI escape/capture orbit length
 - fit planet images to their inclinations -> body_sphere
 - optimize parking orbits revolution time -> take period formula from gen_orbit
 
 - flyby
-- maybe erase global mu and substitute it with a local variable?
-- double check parameters using Nasa fact sheets
 - allow for retrograde escape orbit?
-- check arguments usage
-- figure performances
 - adapt hyperbola to all planets
 - change parking orbit color?

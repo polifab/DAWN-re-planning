@@ -1,6 +1,6 @@
 function [traj, delta_v] = ...
-  capture_hyp(goal_id, orbit, arr_time, park_r, park_i, origin_coe, v_in)
-% ESCAPE_HYP(goal_id, orbit, arr_time, park_r,park_i, origin_coe, v_in)
+  capture_hyp(goal_id, orbit, arr_time, park_r, origin_coe, v_in)
+% ESCAPE_HYP(goal_id, orbit, arr_time, park_r, park_i, origin_coe, v_in)
 %   computes the trajectory the spacecraft will follow
 %   to enter the sphere of influence of object GOAL_ID at time
 %   ARR_TIME and to position itself into a circular parking orbit
@@ -65,28 +65,28 @@ function [traj, delta_v] = ...
     %% Data
     global mu
 
-    masses = 10^24 * [0.330
-                      4.87
-                      5.97
-                      0.642
-                      1898
-                      568
-                      86.8
-                      102
-                      0.0146
-                      0.0002589
-                      0.000947
+    masses = 10^24 * [0.330104
+                      4.86732
+                      5.97219
+                      0.641693
+                      1898.13
+                      568.319
+                      86.8103
+                      102.410
+                      0.01309
+                      0.000259
+                      0.0009393
                       1989100]; %[kg]
 
-	radii = [2439.5
-             6052 
-             6378
-             3396
-             71492
-             60268
-             25559
-             24764
-             1185
+	radii = [2439.7
+             6051.8 
+             6371
+             3389.5
+             69911
+             58232
+             25362
+             24622
+             1151
              262.7
              476.2
              695508]; %[km] 
@@ -100,10 +100,10 @@ function [traj, delta_v] = ...
                  2870658186
                  4498396441
                  5906440628
-                 491593189
-                 423690250];%[km]
+                 353649000000
+                 413690250];%[km]
     
-    G    = 6.6742e-20; %[km^3/kg/s^2]
+    G = 6.6742e-20; %[km^3/kg/s^2]
     
     %% Input data
     %SOI: (m_planet/m_Sun)^(2/5) * distance_from_Sun
@@ -112,6 +112,8 @@ function [traj, delta_v] = ...
     
     pl_mu = G * masses(goal_id); %[km^3/s^2]
     pl_radius = radii(goal_id); %[km]
+    
+    park_i = origin_coe(4);
 
     %% Needed variables
     [~, pl_r0, v_arr, ~] =...
@@ -137,9 +139,9 @@ function [traj, delta_v] = ...
     beta = acos(1/e);
 
     h = Delta*vinf;
-    RA = deg2rad(origin_coe(3));
-    incl = deg2rad(origin_coe(4));
-    w = deg2rad(origin_coe(5));
+    RA = origin_coe(3); %[rad]
+    incl = origin_coe(4); %[rad]
+    w = origin_coe(5); %[rad]
 
     n = sqrt(pl_mu/a^3);
     
@@ -157,8 +159,9 @@ function [traj, delta_v] = ...
     end
 
     %Angle of orientation of escape trajectory
-    out_dir = orbit(2,1:3)-orbit(1,1:3);
-    out_angle = deg2rad(atan2d_0_360(out_dir(2),out_dir(1)));
+    in_dir = Rotz(origin_coe(3))'*Rotx(park_i)'*...
+        (orbit(1,1:3)-orbit(2,1:3))'; %entry vector: (end-1,1:3)<-(end,1:3)
+    in_angle = deg2rad(atan2d_0_360(in_dir(2),in_dir(1)));
 
     t = 0:0.1:5;
 
@@ -166,11 +169,12 @@ function [traj, delta_v] = ...
     xh_l = -a*cosh(t);
     xh_r = a*cosh(t);
     yh = b*sinh(t);
-
+    
     hyp = [];
     for i = 1:length(t)
-        point = pl_r0' + Rotx(incl)*Rotx(park_i)*Rotz(out_angle)*Rotz(beta+2*half_delta)*...
-                    ([xh_l(i); yh(i);0] + [-(rp-a);0;0]);
+        point = pl_r0' + Rotz(origin_coe(3))*Rotx(park_i)*...
+                    Rotz(in_angle)*Rotz(2*half_delta+beta)*...
+                    ([xh_l(i); -yh(i);0] + [-(rp-a);0;0]);
         hyp = cat(1,hyp,point');
         if norm(hyp(size(hyp,1),:)-hyp(1,:))>= pl_SOI
             break;
