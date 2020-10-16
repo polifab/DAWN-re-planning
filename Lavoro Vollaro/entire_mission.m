@@ -300,9 +300,9 @@ end
 xlabel('x')
 ylabel('y')
 zlabel('z')
-xlim([-2.045565*10^8, -2.04554*10^8])
-ylim([-2.4995*10^8, -2.499475*10^8])
-zlim([3.22723*10^7, 3.2273*10^7])
+xlim([1.964214*10^8, 1.964233*10^8])
+ylim([-2.676874*10^8, -2.676854*10^8])
+zlim([-1.58848*10^7, -1.5884*10^7])
 view(-10,45)
 grid
 title("Vesta close-up (arrival)")
@@ -332,9 +332,9 @@ end
 xlabel('x')
 ylabel('y')
 zlabel('z')
-xlim([-2.046*10^8,-2.0451*10^8])
-ylim([-2.49995*10^8,-2.49905*10^8])
-zlim([3.223*10^7,3.232*10^7])
+xlim([1.9638*10^8,1.964625*10^8])
+ylim([-2.677255*10^8,-2.67645*10^8])
+zlim([-1.5926*10^7,-1.5842*10^7])
 view(-10,45)
 grid
 title("Vesta SOI close-up (arrival)")
@@ -367,9 +367,9 @@ end
 xlabel('x')
 ylabel('y')
 zlabel('z')
-xlim([-2.046547*10^8, -2.046525*10^8])
-ylim([-2.498735*10^8, -2.498713*10^8])
-zlim([3.22814*10^7, 3.22822*10^7])
+xlim([2.144949*10^8, 2.144969*10^8])
+ylim([3.143305*10^8, 3.143325*10^8])
+zlim([-3.55521*10^7, -3.55515*10^7])
 view(-10,45)
 grid
 title("Vesta close-up (departure)")
@@ -400,9 +400,9 @@ end
 xlabel('x')
 ylabel('y')
 zlabel('z')
-xlim([-2.047*10^8, -2.0461*10^8])
-ylim([-2.4992*10^8, -2.4982*10^8])
-zlim([3.22*10^7, 3.235*10^7])
+xlim([2.14455*10^8, 2.14537*10^8])
+ylim([3.1429*10^8, 3.1437*10^8])
+zlim([-3.5592*10^7, -3.5511*10^7])
 view(-10,45)
 grid
 title("Vesta SOI close-up (departure)")
@@ -435,9 +435,9 @@ end
 xlabel('x')
 ylabel('y')
 zlabel('z')
-xlim([-3.57995*10^8, -3.5799*10^8])
-ylim([1.156455*10^8, 1.156505*10^8])
-zlim([6.93861*10^7, 6.93874*10^7])
+xlim([3.4862*10^7, 3.48656*10^7])
+ylim([-4.271015*10^8, -4.270978*10^8])
+zlim([-1.97804*10^7, -1.97794*10^7])
 view(-10,45)
 grid
 title("Ceres close-up")
@@ -464,9 +464,9 @@ end
 xlabel('x')
 ylabel('y')
 zlabel('z')
-xlim([ -3.5808*10^8, -3.579*10^8])
-ylim([1.1556*10^8, 1.1574*10^8])
-zlim([6.928*10^7, 6.948*10^7])
+xlim([ 3.478*10^7, 3.495*10^7])
+ylim([-4.2718*10^8,-4.2702*10^8])
+zlim([-1.9865*10^7,-1.969*10^7])
 view(-10,45)
 grid
 title("Ceres SOI close-up")
@@ -478,10 +478,10 @@ surface(Ceres_r4(1)+Ceres_SOI*xx, Ceres_r4(2)+Ceres_SOI*yy,...
       Ceres_r4(3)+Ceres_SOI*zz,'FaceColor','none','EdgeColor',colors(11))
 
 %           DEBUG
-% Ctrack = [[VC_orbit(end-1,1);VC_orbit(end,1)] ...
-%     [VC_orbit(end-1,2);VC_orbit(end,2)] ...
-%     [VC_orbit(end-1,3);VC_orbit(end,3)]];
-% plot3(track3(3:4,1),track3(3:4,2),track3(3:4,3),'k')
+Ctrack = [[VC_orbit(end-1,1);VC_orbit(end,1)] ...
+    [VC_orbit(end-1,2);VC_orbit(end,2)] ...
+    [VC_orbit(end-1,3);VC_orbit(end,3)]];
+plot3(Ctrack(:,1),Ctrack(:,2),Ctrack(:,3),'k')
 
 capture_hyp(11,VC_orbit(end-1:end,1:3),[2015 3 5 0 0 0],...
                     Ceres_hamo,orb_elem3,sp_vf3);
