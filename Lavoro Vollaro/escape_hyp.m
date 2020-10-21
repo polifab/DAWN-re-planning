@@ -119,28 +119,29 @@ function [traj, delta_v] = escape_hyp(obj_id, orbit,...
         planet_elements_and_sv(obj_id,dep_time(1),dep_time(2),...
                         dep_time(3),dep_time(4),dep_time(5),dep_time(6));
    
-    V_dep = norm(v_dep); %[km/s], norm of departing velocity
+%     V_dep = norm(v_dep); %[km/s], norm of departing velocity
 
     %v-infinity of the departure hyperbola
-    vinf = norm(v_out - V_dep); %[km/s]
+    vinf = norm(v_out - v_dep); %[km/s]
 
     %Hyperbola characteristics
-    rp = pl_radius+park_r; %[km], periapsis
-    e = 1+rp*vinf^2/pl_mu; %eccentricity
+    rp = pl_radius + park_r; %[km], periapsis
+    e = 1 + rp*vinf^2/pl_mu; %eccentricity
     a = rp/(e-1); %[km], semi-major axis
-    b = a*sqrt(e^2-1); %[km], semi-minor axis
+%     b = a*sqrt(e^2-1); %[km], semi-minor axis
 
     %Velocity at hyperbola periapsis
-    vp = sqrt(vinf^2+2*pl_mu/rp);
+    vp = sqrt(vinf^2 + 2*pl_mu/rp);
 
     %Angle between hyperbola center and exiting-branch
-    beta = acos(1/e);
+%     beta = acos(1/e);
+    half_delta = asin(1/e);
 
     %Hyperbola orbital elements
     h = rp*vp;
-    RA = deg2rad(goal_coe(3));
-    incl = deg2rad(goal_coe(4));
-    w = deg2rad(goal_coe(5));
+    RA = goal_coe(3);
+    incl = goal_coe(4);
+%     w = goal_coe(5);
 
     %Mean motion
     n = sqrt(pl_mu/a^3);
@@ -154,45 +155,69 @@ function [traj, delta_v] = escape_hyp(obj_id, orbit,...
     
     %% Trajectory computation
     rr = [];
+    out_dir = (orbit(2,1:3)-orbit(1,1:3))'; %exit vector: (2,1:3)<-(1,1:3)
+    out_angle = deg2rad(atan2d_0_360(out_dir(2),out_dir(1)));
+%     up_angle = deg2rad(-atan2d_0_360(out_dir(3),-out_dir(1)));
 
-    for t=0:60:24*3600
-        M = n*t; %Hyperbolic mean anomali
+%     p = -a*(1-e^2); %semilatum [km]
+%     tran = acos(1/e-rp/p); %true anomaly at perigee
+    
+    coe = [h, e, RA, incl, 0, 0];
+    [rprova,~] = sv_from_coe(coe, pl_mu);
+    alpha = deg2rad(atan2d_0_360(rprova(2),rprova(1)));
+
+    xi_des = out_angle - pi - half_delta;
+    alpha_des = pi/2 + xi_des;
+    w_des = alpha_des - alpha;        
+    
+    for t=0:60:100*24*3600%24*3600
+        M = n*t; %Hyperbolic mean anomaly
         F = kepler_H(e,M); %Hyperbolic eccentric anomaly
         cosf = (e-cosh(F))/(e*cosh(F)-1);
         f = acos(cosf); %True anomaly
-        coe = [h, e, RA, incl, w, f];
-        [r,~] = sv_from_coe(coe,pl_mu); %spacecraft position
-        rr = cat(1,rr,r);
-    end
-
-    %Angle of orientation of escape trajectory, to be aligned with
-    %the escape velocity vector
-    out_dir = Rotz(goal_coe(3))'*Rotx(park_i)'*...
-        (orbit(2,1:3)-orbit(1,1:3))'; %exit vector: (2,1:3)<-(1,1:3)
-    out_angle = deg2rad(atan2d_0_360(out_dir(2),out_dir(1)));
-
-    t = 0:0.1:5;
-
-    %Parametric hyperbola equations
-    xh_l = -a*cosh(t);
-    xh_r = a*cosh(t);
-    yh = b*sinh(t);
-
-    hyp = [];
-    for i = 1:length(t)
-        point = pl_r0' + Rotz(goal_coe(3))*Rotx(park_i)*...
-                    Rotz(out_angle)*Rotz(beta)*...
-                    ([xh_l(i); -yh(i);0] + [-(rp-a);0;0]);
-        hyp = cat(1,hyp,point');
-        if norm(hyp(size(hyp,1),:)-hyp(1,:))>= pl_SOI
+        coe = [h, e, RA, incl, w_des, f];
+        [r,~] = sv_from_coe(coe, pl_mu); %spacecraft position
+        if(size(rr,1)>1 && any(isnan(r)))
+            diff = rr(end,:)-rr(end-1,:);
+            point = rr(end,:)' + diff';
+        else
+             point = pl_r0' + r';
+        end
+        rr = cat(1,rr,point');
+        if size(rr,1)>0 && norm(point'-rr(1,:))>= pl_SOI
             break;
         end
     end
+
+    %% Deleted because useless, I think
+    %Angle of orientation of escape trajectory, to be aligned with
+    %the escape velocity vector
+%     out_dir = Rotz(goal_coe(3))'*Rotx(park_i)'*...
+%         (orbit(2,1:3)-orbit(1,1:3))'; %exit vector: (2,1:3)<-(1,1:3)
+%     out_angle = deg2rad(atan2d_0_360(out_dir(2),out_dir(1)));
+% 
+%     t = 0:0.1:5;
+% 
+% %     Parametric hyperbola equations
+%     xh_l = -a*cosh(t);
+%     xh_r = a*cosh(t);
+%     yh = b*sinh(t);
+% 
+%     hyp = [];
+%     for i = 1:length(t)
+%         point = pl_r0' + Rotz(goal_coe(3))*Rotx(park_i)*...
+%                     Rotz(out_angle)*Rotz(beta)*...
+%                     ([xh_l(i); -yh(i);0] + [-(rp-a);0;0]);
+%         hyp = cat(1,hyp,point');
+%         if norm(hyp(size(hyp,1),:)-hyp(1,:))>= pl_SOI
+%             break;
+%         end
+%     end
     
     %% Hyperbola plot
-    plot3(hyp(:,1),hyp(:,2),hyp(:,3),'m-')
+    plot3(rr(:,1),rr(:,2),rr(:,3),'m-')%plot3(hyp(:,1),hyp(:,2),hyp(:,3),'m-')
     
     %% Output arguments
-    traj = hyp;
+    traj = rr;%hyp;
     delta_v = v_b - v_park;
 end
