@@ -50,11 +50,10 @@ plot_orbit.m:
 
 
                                 TODO:
-- check SOI escape/capture orbit length
 - fit planet images to their inclinations -> body_sphere
 - optimize parking orbits revolution time -> take period formula from gen_orbit
-
-- flyby
 - allow for retrograde escape orbit?
 - adapt hyperbola to all planets
 - change parking orbit color?
+
+- check if hyperbola are at the right side wrt the sun

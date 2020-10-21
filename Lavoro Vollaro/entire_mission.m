@@ -24,20 +24,60 @@ colors = ["g"          %green
       
 [xx,yy,zz] = sphere(10);
 
+ masses = 10^24 * [0.330104
+                      4.86732
+                      5.97219
+                      0.641693
+                      1898.13
+                      568.319
+                      86.8103
+                      102.410
+                      0.01309
+                      0.000259
+                      0.0009393
+                      1989100]; %[kg]
+
+	radii = [2439.7
+             6051.8 
+             6371
+             3389.5
+             69911
+             58232
+             25362
+             24622
+             1151
+             262.7
+             476.2
+             695508]; %[km] 
+
+	distances = [57909227
+                 108209475
+                 149598262
+                 227943824
+                 778340821
+                 1426666422
+                 2870658186
+                 4498396441
+                 5906440628
+                 353649000000
+                 413690250];%[km]
+    
+    G = 6.6742e-20; %[km^3/kg/s^2]
+
 %% Data
 
 %Distances from the Sun
-Ceres_to_Sun = 446145795; %[km]
-Vesta_to_Sun = 353*10^6; %[km]
+Vesta_to_Sun = distances(10);%353*10^6; %[km]
+Ceres_to_Sun = distances(11);%446145795; %[km]
 
 %Masses
-Vesta_mass = 2.589*10^20; %[kg]
-Ceres_mass = 8.958*10^20; %[kg]
-Sun_mass = 1.989*10^30; %[kg]
+Vesta_mass = masses(10);%2.589*10^20; %[kg]
+Ceres_mass = masses(11);%8.958*10^20; %[kg]
+Sun_mass = masses(12);%1.989*10^30; %[kg]
 
 %SOI: (m_planet/m_Sun)^(2/5) * distance_from_Sun
-Earth_SOI = 9.24*10^5; %[km]
-Mars_SOI = 5.74*10^5; %[km]
+Earth_SOI = (masses(3)/Sun_mass)^(2/5)*distances(3);%9.24*10^5; %[km]
+Mars_SOI = (masses(4)/Sun_mass)^(2/5)*distances(4);%5.74*10^5; %[km]
 Ceres_SOI = (Ceres_mass/Sun_mass)^(2/5)*Ceres_to_Sun; %[km]
 Vesta_SOI = (Vesta_mass/Sun_mass)^(2/5)*Vesta_to_Sun; %[km]
 
@@ -191,7 +231,7 @@ park_orbit(3,Earth_r0,Epark_radius,orb_elem1(4),orb_elem1(3));
 % plot3(Etrack(1:2,1),Etrack(1:2,2),Etrack(1:2,3),'k')
 
 escape_hyp(3,EM_orbit(1:2,1:3),[2007 9 27 0 0 0], Epark_radius,...
-                                orb_elem1, sp_vf1);
+                                orb_elem1, sp_v1);
 
 %% Earth SOI close-up
 if exist('figure2') == 0
@@ -410,6 +450,8 @@ hold on
 
 body_sphere(10,Vesta_r3)
 
+park_orbit(10,Vesta_r3,Vesta_lamo,orb_elem3(4),orb_elem3(3));
+
 surface(Vesta_r3(1)+Vesta_SOI*xx, Vesta_r3(2)+Vesta_SOI*yy,...
       Vesta_r3(3)+Vesta_SOI*zz,'FaceColor','none','EdgeColor',colors(10))
   
@@ -423,7 +465,7 @@ surface(Vesta_r3(1)+Vesta_SOI*xx, Vesta_r3(2)+Vesta_SOI*yy,...
 % plot3(Vtrack2(1:2,1),Vtrack2(1:2,2),Vtrack2(1:2,3),'k')
 
 escape_hyp(10,VC_orbit(1:2,1:3),[2012 9 5 0 0 0],...
-            Vesta_lamo, orb_elem3,sp_vf3);
+            Vesta_lamo, orb_elem3, sp_v3);
 
 %% Ceres close-up demo
 if exist('figure2') == 0
