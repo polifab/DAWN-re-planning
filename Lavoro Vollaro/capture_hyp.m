@@ -138,8 +138,7 @@ function [traj, delta_v] = ...
     vc = sqrt(pl_mu/rp); % velocity of parking orbit
 
     beta = acos(1/e);
-
-    %%
+    
     h = Delta*vinf;
     RA = origin_coe(3); %[rad]
     incl = origin_coe(4); %[rad]
@@ -152,7 +151,7 @@ function [traj, delta_v] = ...
     %% Trajectory computation
     rr = [];
     
-    in_dir = (orbit(1,1:3)-orbit(2,1:3))'; %exit vector: (2,1:3)<-(1,1:3)
+    in_dir = (orbit(1,1:3)-orbit(2,1:3))'; %exit vector: (1,1:3)<-(2,1:3)
     in_angle = deg2rad(atan2d_0_360(in_dir(2),in_dir(1)));
 
     coe = [h, e, RA, incl, 0, 0];
@@ -163,16 +162,25 @@ function [traj, delta_v] = ...
     alpha_des = pi/2 + xi_des;
     w_des = alpha_des - alpha;        
     
-    for t=0:60:10*24*3600
+    for t=0:60:100*24*3600%ceil(pl_SOI/norm(v_in))
         M = n*t;
         F = kepler_H(e,M);
         cosf = (cosh(F)-e)/(1-e*cosh(F));%Eq 3.41b %cosf = (e-cosh(F))/(e*cosh(F)-1);
         f = acos(cosf);
         coe = [h, e, RA, incl, w_des, f];
-        [r,~] = sv_from_coe(coe,pl_mu);
-        if(size(rr,1)>1 && any(isnan(r)))
-            diff = rr(end,:)-rr(end-1,:);
-            point = rr(end,:)' + diff';
+        [r,~] = sv_from_coe(coe, pl_mu);
+        if(any(isnan(r)))
+            if(size(rr,1)>1)
+                diff = rr(end,:)-rr(end-1,:);
+                point = rr(end,:)' + diff';
+            else
+%                 diff = Rotz(RA)*Rotx(incl)*[round(norm(v_in)*t);0;0];
+%                 point = pl_r0' + rprova' + diff';
+%                 t = t + 24*3600;
+                coe = [h, e, RA, incl, w_des, t/6];
+                [peri,~] = sv_from_coe(coe, pl_mu);
+                point = pl_r0' + peri';
+            end
         else
              point = pl_r0' + r';
         end

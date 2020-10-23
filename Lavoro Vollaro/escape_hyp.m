@@ -170,16 +170,22 @@ function [traj, delta_v] = escape_hyp(obj_id, orbit,...
     alpha_des = pi/2 + xi_des;
     w_des = alpha_des - alpha;        
     
-    for t=0:60:100*24*3600%24*3600
+    for t=0:60:100*24*3600%ceil(pl_SOI/norm(v_out))
         M = n*t; %Hyperbolic mean anomaly
         F = kepler_H(e,M); %Hyperbolic eccentric anomaly
         cosf = (e-cosh(F))/(e*cosh(F)-1);
         f = acos(cosf); %True anomaly
         coe = [h, e, RA, incl, w_des, f];
         [r,~] = sv_from_coe(coe, pl_mu); %spacecraft position
-        if(size(rr,1)>1 && any(isnan(r)))
-            diff = rr(end,:)-rr(end-1,:);
-            point = rr(end,:)' + diff';
+        if(any(isnan(r)))
+            if(size(rr,1)>1)
+                diff = rr(end,:)-rr(end-1,:);
+                point = rr(end,:)' + diff';
+            else
+                coe = [h, e, RA, incl, w_des, t/6];
+                [peri,~] = sv_from_coe(coe, pl_mu);
+                point = pl_r0' + peri';
+            end
         else
              point = pl_r0' + r';
         end
