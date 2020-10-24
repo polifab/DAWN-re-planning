@@ -178,9 +178,9 @@ function [traj, delta_v] = escape_hyp(obj_id, orbit,...
         coe = [h, e, RA, incl, w_des, f];
         [r,~] = sv_from_coe(coe, pl_mu); %spacecraft position
         if(any(isnan(r)))
-            if(size(rr,1)>1)
-                diff = rr(end,:)-rr(end-1,:);
-                point = rr(end,:)' + diff';
+            if(rr(2,:) ~= [0 0 0])
+                diff = rr(counter-1,:)-rr(counter-2,:);
+                point = rr(counter-1,:)' + diff';
             else
                 coe = [h, e, RA, incl, w_des, t/6];
                 [peri,~] = sv_from_coe(coe, pl_mu);
@@ -192,7 +192,7 @@ function [traj, delta_v] = escape_hyp(obj_id, orbit,...
         rr(counter, :) = point';
         counter = counter + 1;
         %rr = cat(1,rr,point');
-        if size(rr,1)>0 && norm(point'-rr(1,:))>= pl_SOI
+        if all(rr(1,:) ~= [0 0 0]) && norm(point'-rr(1,:))>= pl_SOI
             break;
         end
     end
