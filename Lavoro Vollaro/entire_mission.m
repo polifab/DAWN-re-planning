@@ -3,6 +3,7 @@ clc
 clear all
 close all
 tic
+
 %% Constants
 
 %Sun gravitational parameter
@@ -537,7 +538,9 @@ surface(Ceres_r4(1)+Ceres_SOI*xx, Ceres_r4(2)+Ceres_SOI*yy,...
 
 capture_hyp(11,VC_orbit(end-1:end,1:3),[2015 3 5 0 0 0],...
                     Ceres_hamo,orb_elem3,sp_vf3);
-toc
+                
 %% Gathering positions for a TBD animation
 positions = [hyperbola;
              EM_orbit(2:end,1:3)];
+         
+toc

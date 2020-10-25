@@ -180,6 +180,7 @@ function [traj, delta_v] = escape_hyp(obj_id, orbit,...
         if(any(isnan(r)))
             if(rr(2,:) ~= [0 0 0])
                 diff = rr(counter-1,:)-rr(counter-2,:);
+                diff = 60*norm(v_out)*diff/norm(diff);
                 point = rr(counter-1,:)' + diff';
             else
                 coe = [h, e, RA, incl, w_des, t/6];

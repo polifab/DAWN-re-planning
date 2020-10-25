@@ -171,8 +171,9 @@ function [traj, delta_v] = ...
         [r,~] = sv_from_coe(coe, pl_mu);
         if(any(isnan(r)))
             if(rr(2,:) ~= [0 0 0])
-                diff = rr(end,:)-rr(end-1,:);
-                point = rr(end,:)' + diff';
+                diff = rr(counter-1,:)-rr(counter-2,:);
+                diff = 60*norm(v_in)*diff/norm(diff);
+                point = rr(counter-1,:)' + diff';
             else
 %                 diff = Rotz(RA)*Rotx(incl)*[round(norm(v_in)*t);0;0];
 %                 point = pl_r0' + rprova' + diff';
