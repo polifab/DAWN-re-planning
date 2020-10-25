@@ -41,7 +41,7 @@ for i = (em_days + mv_days + 1):(em_days + mv_days + v_days)
 	month_now	= time_vector(i,2);
 	day_now		= time_vector(i,3);
 	
-	[~, tmp_Vesta_now, ~, ~] = planet_elements_and_sv2(10, ...
+	[~, tmp_Vesta_now, ~, ~] = planet_elements_and_sv(10, ...
 								year_now, month_now, day_now, 0, 0, 0);
 	
 	pos_spcr(i,:) = tmp_Vesta_now;

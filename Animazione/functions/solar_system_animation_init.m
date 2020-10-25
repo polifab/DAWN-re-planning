@@ -1,7 +1,7 @@
 %% General parameters - To edit
 % animation rates
 time_pause = 0;		% time [s] after each drawing. Set to zero to avoid pausing
-fr_skip = 10 +1;	% frame skip between each drawing
+fr_skip = 0 +1;	% frame skip between each drawing
 
 % view angles
 View = [30 10];				% initial view
