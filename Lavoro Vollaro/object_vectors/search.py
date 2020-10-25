@@ -8,7 +8,8 @@ ceres = open("ceres_rv.m", "x")
 vesta = open("vesta_rv.m", "x")
 
 with open('ceres_vector.txt', 'rt') as myfile, open("ceres_rv.m", "w") as ceres:
-    ceres.write("ceres_data = [ \n")
+    ceres.write("function data = ceres_rv() \n")
+    ceres.write("data = [ \n")
     for myline in myfile:
         line = myline.strip('\n')
         if len(line) >= 2:
@@ -26,7 +27,8 @@ with open('ceres_vector.txt', 'rt') as myfile, open("ceres_rv.m", "w") as ceres:
     ceres.write('];')
 
 with open('vesta_vector.txt', 'rt') as myfile, open("vesta_rv.m", "w") as vesta:
-    vesta.write("vesta_data = [ \n")
+    vesta.write("function data = vesta_rv() \n")
+    vesta.write("data = [ \n")
     for myline in myfile:
         line = myline.strip('\n')
         if len(line) >= 2:
