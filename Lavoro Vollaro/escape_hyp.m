@@ -154,7 +154,7 @@ function [traj, delta_v] = escape_hyp(obj_id, orbit,...
     v_park = sqrt(mu_dep/park_r);
     
     %% Trajectory computation
-    rr = [];
+    rr = zeros(100*24*3600/60,3);
     out_dir = (orbit(2,1:3)-orbit(1,1:3))'; %exit vector: (2,1:3)<-(1,1:3)
     out_angle = deg2rad(atan2d_0_360(out_dir(2),out_dir(1)));
 %     up_angle = deg2rad(-atan2d_0_360(out_dir(3),-out_dir(1)));
@@ -169,7 +169,7 @@ function [traj, delta_v] = escape_hyp(obj_id, orbit,...
     xi_des = out_angle - pi - half_delta;
     alpha_des = pi/2 + xi_des;
     w_des = alpha_des - alpha;        
-    
+    counter = 1;
     for t=0:60:100*24*3600%ceil(pl_SOI/norm(v_out))
         M = n*t; %Hyperbolic mean anomaly
         F = kepler_H(e,M); %Hyperbolic eccentric anomaly
@@ -178,9 +178,10 @@ function [traj, delta_v] = escape_hyp(obj_id, orbit,...
         coe = [h, e, RA, incl, w_des, f];
         [r,~] = sv_from_coe(coe, pl_mu); %spacecraft position
         if(any(isnan(r)))
-            if(size(rr,1)>1)
-                diff = rr(end,:)-rr(end-1,:);
-                point = rr(end,:)' + diff';
+            if(rr(2,:) ~= [0 0 0])
+                diff = rr(counter-1,:)-rr(counter-2,:);
+                diff = 60*norm(v_out)*diff/norm(diff);
+                point = rr(counter-1,:)' + diff';
             else
                 coe = [h, e, RA, incl, w_des, t/6];
                 [peri,~] = sv_from_coe(coe, pl_mu);
@@ -189,12 +190,14 @@ function [traj, delta_v] = escape_hyp(obj_id, orbit,...
         else
              point = pl_r0' + r';
         end
-        rr = cat(1,rr,point');
-        if size(rr,1)>0 && norm(point'-rr(1,:))>= pl_SOI
+        rr(counter, :) = point';
+        counter = counter + 1;
+        %rr = cat(1,rr,point');
+        if all(rr(1,:) ~= [0 0 0]) && norm(point'-rr(1,:))>= pl_SOI
             break;
         end
     end
-
+    rr = rr(1:counter-2, 1:3);
     %% Deleted because useless, I think
     %Angle of orientation of escape trajectory, to be aligned with
     %the escape velocity vector

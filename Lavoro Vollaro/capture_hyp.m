@@ -149,7 +149,7 @@ function [traj, delta_v] = ...
     n = sqrt(pl_mu/a^3);
     
     %% Trajectory computation
-    rr = [];
+    rr = zeros(100*24*3600/60,3);
     
     in_dir = (orbit(1,1:3)-orbit(2,1:3))'; %exit vector: (1,1:3)<-(2,1:3)
     in_angle = deg2rad(atan2d_0_360(in_dir(2),in_dir(1)));
@@ -161,7 +161,7 @@ function [traj, delta_v] = ...
     xi_des = in_angle - pi - half_delta;
     alpha_des = pi/2 + xi_des;
     w_des = alpha_des - alpha;        
-    
+    counter = 1;
     for t=0:60:100*24*3600%ceil(pl_SOI/norm(v_in))
         M = n*t;
         F = kepler_H(e,M);
@@ -170,9 +170,10 @@ function [traj, delta_v] = ...
         coe = [h, e, RA, incl, w_des, f];
         [r,~] = sv_from_coe(coe, pl_mu);
         if(any(isnan(r)))
-            if(size(rr,1)>1)
-                diff = rr(end,:)-rr(end-1,:);
-                point = rr(end,:)' + diff';
+            if(rr(2,:) ~= [0 0 0])
+                diff = rr(counter-1,:)-rr(counter-2,:);
+                diff = 60*norm(v_in)*diff/norm(diff);
+                point = rr(counter-1,:)' + diff';
             else
 %                 diff = Rotz(RA)*Rotx(incl)*[round(norm(v_in)*t);0;0];
 %                 point = pl_r0' + rprova' + diff';
@@ -184,11 +185,13 @@ function [traj, delta_v] = ...
         else
              point = pl_r0' + r';
         end
-        rr = cat(1,rr,point');
-        if size(rr,1)>0 && norm(point'-rr(1,:))>= pl_SOI
+        rr(counter,:) = point';
+        counter = counter+1;
+        if all(rr(1,:) ~= [0 0 0]) && norm(point'-rr(1,:))>= pl_SOI
             break;
         end
     end
+    rr = rr(1:counter-2, 1:3);
 
     %% Deleted because useless, I think
     %Angle of orientation of escape trajectory
