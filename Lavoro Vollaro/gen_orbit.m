@@ -1,5 +1,5 @@
 function [dep_r, dep_v, arr_r, arr_v, flight, orb_oe] = ...
-                        gen_orbit(dep_id, arr_id, dep_time, arr_time)
+                        gen_orbit(dep_id, arr_id, dep_time, arr_time,flag)
 % GEN_ORBIT(dep_id, arr_id, dep_time, arr_time) generates info about
 %   the interplanetary orbit of a 1000kg spacecraft departing from 
 %   DEP_ID at DEP_TIME and arriving to ARR_ID at ARR_TIME.
@@ -100,45 +100,119 @@ function [dep_r, dep_v, arr_r, arr_v, flight, orb_oe] = ...
     second    = arr_time(6);
     arrive = [planet_id  year  month  day  hour  minute  second];
 
-    %% Computations
-    [planet1, planet2, trajectory] = interplanetary(depart, arrive);
+    %% Adding for Mars-Vesta
+    if (dep_id == 4 && arr_id == 10 && flag ~= 0)
+        % Conversions
+        au2km = 149597870.700; % [km]
+        auday2kms = 149597870.700/86400.0; % [km/s]
+        
+        if (flag == 1) %from Mars to added point
+            [~, dep_r, dep_pv, ~] = ...
+                planet_elements_and_sv(dep_id, ...
+                dep_time(1),dep_time(2),dep_time(3),...
+                dep_time(4),dep_time(5),dep_time(6));
+            
+            [orb_oe,~,~,~] = planet_elements_and_sv(arr_id, ...
+                arr_time(1),arr_time(2),arr_time(3),...
+                arr_time(4),arr_time(5),arr_time(6));
+           
+            % Index calculation based on date
+            j0_arr     = J0(arr_time(1),arr_time(2),arr_time(3));
+            ut_arr     = (arr_time(4) + arr_time(5)/60 + arr_time(6)/3600)/24;
+            jd_arr     = j0_arr + ut_arr;
+            j0_dep     = J0(dep_time(1),dep_time(2),dep_time(3));
+            ut_dep     = (dep_time(4) + dep_time(5)/60 + dep_time(6)/3600)/24;
+            jd_dep     = j0_dep + ut_dep;
+            t          = floor((jd_arr - jd_dep +1)/2);%jd - 2454879.5 + 1; % +1 because index starts at 1
+ 
+            % Data loading
+            dawn_data = dawn_rv();
 
-    %Rp1, Vp1: state vector of planet 1 at departure (km, km/s)
-    %R1, V1: heliocentric state vector of the spacecraft 
-    %at departure (km, km/s)
-    R1  = planet1(1,1:3);
-    Vp1 = planet1(1,4:6);
-    jd1 = planet1(1,7);
+            % Setting position, velocity, coe
+            arr_r = au2km * dawn_data(t,1:3);
+%             arr_v = auday2kms * dawn_data(t,4:6);
+            
+            % Time of flight
+            flight = t;
+            
+            % Velocity computation
+            [dep_v, arr_v] = lambert(dep_r, arr_r, t*24*3600, 'pro');
+            
+            pp = 'Dawn';
+        elseif (flag == 2) %from added point to Vesta
+             % Data loading
+            dawn_data = dawn_rv();
 
-    %Rp2, Vp2: state vector of planet 2 at arrival (km, km/s)
-    %R2, V2: heliocentric state vector of the spacecraft at
-    %arrival (km, km/s)
-    R2  = planet2(1,1:3);
-    Vp2 = planet2(1,4:6);
-    jd2 = planet2(1,7);
+            % Index calculation based on date
+            j0_arr     = J0(arr_time(1),arr_time(2),arr_time(3));
+            ut_arr     = (arr_time(4) + arr_time(5)/60 + arr_time(6)/3600)/24;
+            jd_arr     = j0_arr + ut_arr;
+            j0_dep     = J0(dep_time(1),dep_time(2),dep_time(3));
+            ut_dep     = (dep_time(4) + dep_time(5)/60 + dep_time(6)/3600)/24;
+            jd_dep     = j0_dep + ut_dep;
+            t          = floor((jd_arr - jd_dep +1)/2); % +1 because index starts at 1
 
-    V1  = trajectory(1,1:3);
-    V2  = trajectory(1,4:6);
+            % Setting position, velocity, coe
+            dep_r = au2km * dawn_data(t,1:3);
+%             dep_v = auday2kms * dawn_data(t,4:6);
+            
+            % Time of flight
+            flight = t;
+            
+            [orb_oe, arr_r,~,~] = planet_elements_and_sv(arr_id, ...
+                arr_time(1),arr_time(2),arr_time(3),...
+                arr_time(4),arr_time(5),arr_time(6));
+            
+            % Velocity computation
+            [dep_v, arr_v] = lambert(dep_r, arr_r, t*24*3600, 'pro');
+        end
+    else
+        %% Computations
+        [planet1, planet2, trajectory] = interplanetary(depart, arrive);
 
-    %time of flight in Julian days
-    tof = jd2 - jd1;
+        %Rp1, Vp1: state vector of planet 1 at departure (km, km/s)
+        %R1, V1: heliocentric state vector of the spacecraft 
+        %at departure (km, km/s)
+        R1  = planet1(1,1:3);
+        Vp1 = planet1(1,4:6);
+        jd1 = planet1(1,7);
 
-    % Use Algorithm 4.2 to find the orbital elements of the
-    % spacecraft trajectory based on [Rp1, V1]...
-    coe  = coe_from_sv(R1, V1, mu);
-    %   ... and [R2, V2]
-    coe2 = coe_from_sv(R2, V2, mu);
+        %Rp2, Vp2: state vector of planet 2 at arrival (km, km/s)
+        %R2, V2: heliocentric state vector of the spacecraft at
+        %arrival (km, km/s)
+        R2  = planet2(1,1:3);
+        Vp2 = planet2(1,4:6);
+        jd2 = planet2(1,7);
 
-    % Equations 8.94 and 8.95:
-    vinf1 = V1 - Vp1;
-    vinf2 = V2 - Vp2;
+        V1  = trajectory(1,1:3);
+        V2  = trajectory(1,4:6);
 
+        %time of flight in Julian days
+        tof = jd2 - jd1;
+
+        % Use Algorithm 4.2 to find the orbital elements of the
+        % spacecraft trajectory based on [Rp1, V1]...
+        coe  = coe_from_sv(R1, V1, mu);
+        %   ... and [R2, V2]
+        coe2 = coe_from_sv(R2, V2, mu);
+
+        % Equations 8.94 and 8.95:
+        vinf1 = V1 - Vp1;
+        vinf2 = V2 - Vp2;
+
+        
+    %% Output info
     % Echo the input data and output the solution to
     % the command window:
-    [mm, pp] = month_planet_names(depart(3),depart(1));
     
-    %% Output info
     %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    if (flag == 1)
+        [mm, ~] = month_planet_names(depart(3),depart(1));
+        pp = 'Dawn';
+    else
+        [mm, pp] = month_planet_names(depart(3),depart(1));
+    end
+        
     fprintf('-----------------------------------------------------')
     fprintf('\n\n Departure:\n');
     fprintf('\n   Planet: %s', pp);%planet_name(depart(1)))
@@ -171,8 +245,14 @@ function [dep_r, dep_v, arr_r, arr_v, flight, orb_oe] = ...
     fprintf('\n\n  ~~~~~~~~~~~~\n')
     fprintf('\n\n Time of flight = %g days\n', tof)
     fprintf('\n\n  ~~~~~~~~~~~~\n')
+    
     %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    [mm,pp] = month_planet_names(arrive(3),arrive(1));
+    if(flag == 2)
+        [mm,~] = month_planet_names(arrive(3),arrive(1));
+        pp = 'Dawn';
+    else
+        [mm,pp] = month_planet_names(arrive(3),arrive(1));
+    end
     fprintf('\n\n Arrival:\n');
     fprintf('\n   Planet: %s', pp);
     fprintf('\n   Year  : %g', arrive(2))
@@ -238,4 +318,5 @@ function [dep_r, dep_v, arr_r, arr_v, flight, orb_oe] = ...
     flight = tof;
     %         h     , e     , RA    , incl  , w     , TA    , a
     orb_oe = [coe(1), coe(2), coe(3), coe(4), coe(5), coe(6), coe(7)];
+end
 end
