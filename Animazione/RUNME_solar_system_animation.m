@@ -8,10 +8,8 @@
 % Engineering Students, 3e" folder in Matlab-path
 
 %% TO DO list
-
 % aggiungere modalita` fade 
 % punti rilevanti (da plottare solo dopo avvenimenti)
-% capire come fare video alta qualita`
 
 %% intro
 clc; clear;

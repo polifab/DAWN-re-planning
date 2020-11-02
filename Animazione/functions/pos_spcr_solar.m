@@ -9,10 +9,13 @@ pos_spcr = zeros(n_days, 3);
 % from day 1 (27/9/07) to Mars arrival/departure (17/2/09)
 em_days = datenum([2009 2 17]) - datenum([2007 9 27]);
 
-[body_pos1, sp_v1, body_posf1, sp_vf1, tof1, orb_elem1] = ...
-                gen_orbit2(3, 4, [2007 9 27 0 0 0], [2009 2 17 0 0 0]);
+[body_pos1, sp_v1, body_posf1, sp_vf1,tof1, orb_elem1] = ...
+                gen_orbit2(3,4,[2007 9 27 0 0 0],[2009 2 17 0 0 0],0);
+			
 EM_orbit = intpl_orbit2(tof1, Earth_r0, sp_v1);
+
 em_pos = EM_orbit(:,1:3);
+
 q = floor(size(em_pos,1)/em_days); % rate of samples for each day
 % UHM UHM UHM UHM CHECKCHECK
 for i = 1:em_days
@@ -22,9 +25,14 @@ end
 %% Mars to Vesta
 % from (17/2/09) to (16/7/11)
 mv_days = datenum([2011 7 16])- datenum([2009 2 17]);
-[body_pos2, sp_v2, body_posf2, sp_vf2, tof2, orb_elem2] = ...
-                gen_orbit2(4,10,[2009 2 17 0 0 0],[2011 7 16 0 0 0]);
-MV_orbit = intpl_orbit2(tof2,Mars_r1,sp_v2);
+[body_pos21, sp_todawn, body_posf21, sp_vf21, tof21, orb_elem21] = ...
+                gen_orbit2(4,10,[2009 2 17 0 0 0],[2011 7 16 0 0 0],1);
+[body_pos22, sp_fromdawn, body_posf22, sp_vf22, tof22, orb_elem22] = ...
+                gen_orbit2(4,10,[2009 2 17 0 0 0],[2011 7 16 0 0 0],2);
+MD_orbit = intpl_orbit2(tof21,Mars_r1,sp_todawn);
+DV_orbit = intpl_orbit2(tof22,body_posf21,sp_fromdawn);
+MV_orbit = [MD_orbit;DV_orbit];			
+
 mv_pos = MV_orbit(:,1:3);
 q = floor(size(mv_pos,1)/mv_days); % rate of samples for each day
 for i = 1:mv_days
@@ -52,7 +60,7 @@ end
 vc_days = datenum([2015 3 6])- datenum([2012 9 5]);
 
 [body_pos3, sp_v3, body_posf3, sp_vf3, tof3, orb_elem3] = ...
-                gen_orbit2(10,11,[2012 9 5 0 0 0],[2015 3 5 0 0 0]);
+                gen_orbit2(10,11,[2012 9 5 0 0 0],[2015 3 5 0 0 0],0);
 VC_orbit = intpl_orbit2(tof3,Vesta_r3,sp_v3);
 vc_pos = VC_orbit(:,1:3);
 q = floor(size(vc_pos,1)/vc_days); % rate of samples for each day
