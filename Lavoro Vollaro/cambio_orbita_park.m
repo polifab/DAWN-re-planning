@@ -1,33 +1,46 @@
-Vesta_r3 = 1.0e+08 * [1.964223506918297 -2.676863670878835 -0.158843745137528];
+function [orb, t] = cambio_orbita_park(Vesta_r3, r1, r2, tf, grade)
+%% cambio_orbita_park
+%  IN:
+%  Cambio di orbita di parcheggio su Vesta (da adattare per generalizzare)
+%  Vesta_r3: posizione di vesta rispetto al Sole in quel momento
+%  r1: posizione di partenza dell'orbita di parcheggio
+%  r2: posizione di arrrivo
+%  tf: tempo di volo
+%  grade: parametro per un'orbita prograda o retrograda per il cambio di orbita
+%  OUT:
+%  orb: orbita del cambio di orbita di parcheggio
+%  t: tempi in cui è valutata l'orbita
+%% Setting problem
 
-r2 = (1.0e+08 * [ 1.964223326309674  -2.676868093233760  -0.158843836939114]) - Vesta_r3;
-r1 = (1.0e+08 * [ 1.964223456944477  -2.676854348001822  -0.158844017768201]) - Vesta_r3;
+    %Vesta_r3 = 1.0e+08 * [1.964223506918297 -2.676863670878835 -0.158843745137528]; % Vesta position respect to Sun at arrival
 
+    r2 = r2 - Vesta_r3; % arrival pos
+    r1 = r1 - Vesta_r3; % dep pos
 
-%r1 = 1.0e+02 * [8.459989460540838   3.757532311395191  -1.141148941063138];
-%r2 = 1.0e+02 * [-1.004253938250492   4.298513159856268   0.335401480537469];
+    %tf = 12000;
+    global mu
+    mu = 17.8;
 
-tf = 15000;
-global mu
-mu = 17.8;
+    [V1, V2] = lambert(r1, r2, tf, grade);
 
-[V1, V2] = lambert(r1, r2, tf, 'pro');
-%[V1, V2, extremal_distances, exitflag] = lambert_rodyo(r1, r2, tf, 0, mu);
-%V1_new = [V1(2) V1(1) V1(3)];
-y0 = [r1 V1]';
-[t,y] = rkf45(@rates, [0 tf], y0);
-%%
-new_r1 = Vesta_r3 + r1;
-new_r2 = Vesta_r3 + r2;
+    y0 = [r1 V1]';
+    [t,y] = rkf45(@rates, [0 tf], y0);
 
-orb  = Vesta_r3 +  y(:,1:3);
+ 
+%% plotting
+    new_r1 = Vesta_r3 + r1;
+    new_r2 = Vesta_r3 + r2;
 
-plot3(new_r1(:,1), new_r1(:,2), new_r1(:,3), 'o')
-hold on;
-plot3(new_r2(:,1), new_r2(:,2), new_r2(:,3), '*')
-plot3(orb(:,1), orb(:,2), orb(:,3), '-.', 'LineWidth', 2)
+    orb  = Vesta_r3 +  y(:,1:3);
 
+    plot3(new_r1(:,1), new_r1(:,2), new_r1(:,3), 'o')
+    hold on;
+    plot3(new_r2(:,1), new_r2(:,2), new_r2(:,3), '*')
+    plot3(orb(:,1), orb(:,2), orb(:,3), '-.', 'LineWidth', 2)
 
+    mu = 1.327565122000000e+11; %[km^3/s^2]
+    
+end
 %%
 function dydt = rates(t,f)
     %{
