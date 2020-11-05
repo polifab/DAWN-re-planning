@@ -366,7 +366,7 @@ r1 = (1.0e+08 * [ 1.964218321663772  -2.676871375732791  -0.158842884222893]);
 r2 = (1.0e+08 * [ 1.964225414871708  -2.676859686053302  -0.158844026563676]);
 tf = 12000;
 grade = 'pro';
-[orb_change_park, t_change_park] = cambio_orbita_park(Vesta_r2, r1, r2, tf, grade);
+[orb_change_park, t_change_park, deltav_park] = cambio_orbita_park(Vesta_r2, r1, r2, tf, grade);
 
 %           DEBUG
 % Vtrack = [[MV_orbit(1,1);MV_orbit(2,1)] ...

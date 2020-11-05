@@ -1,4 +1,4 @@
-function [orb, t] = cambio_orbita_park(Vesta_r3, r1, r2, tf, grade)
+function [orb, t, deltav] = cambio_orbita_park(Vesta_r3, r1, r2, tf, grade)
 %% cambio_orbita_park
 %  IN:
 %  Cambio di orbita di parcheggio su Vesta (da adattare per generalizzare)
@@ -38,6 +38,22 @@ function [orb, t] = cambio_orbita_park(Vesta_r3, r1, r2, tf, grade)
     plot3(new_r2(:,1), new_r2(:,2), new_r2(:,3), '*')
     plot3(orb(:,1), orb(:,2), orb(:,3), '-.', 'LineWidth', 2)
 
+ %% deltav computation
+ 
+R2 = sqrt(dot(r2,r2)) ;           % module of r2
+R1 = sqrt(dot(r1,r1)) ;           % module of r1
+v_initial = sqrt(dot(V1,V1));     % module of V1
+v_final = sqrt(dot(V2,V2));       % module of V2
+
+v_park1 = sqrt(mu/R1)             % initial circular orbit velocity 
+v_park2 = sqrt(mu/R2)             % final circular orbit velocity
+
+deltav1 = v_initial - v_park1     % initial delta v
+deltav2 = v_final - v_park2       % final delta v
+
+deltav = abs(deltav1) + abs(deltav2)   % total delta v
+
+    
     mu = 1.327565122000000e+11; %[km^3/s^2]
     
 end
