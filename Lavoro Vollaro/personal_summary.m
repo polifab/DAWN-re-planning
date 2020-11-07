@@ -53,7 +53,7 @@ plot_orbit.m:
 - fit planet images to their inclinations -> body_sphere
 - optimize parking orbits revolution time -> take period formula from gen_orbit
 - allow for retrograde escape orbit?
-- adapt hyperbola to all planets
 - change parking orbit color?
-
-- check if hyperbola are at the right side wrt the sun
+- use orbit to get out/in_angle in park_orbit and adapt it
+- park_out -> fix point addition
+- park_in -> done(flip, fix addition, fix if div!=0)
