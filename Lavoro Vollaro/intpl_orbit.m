@@ -1,4 +1,4 @@
-function orb = intpl_orbit(arr_days, r_init, v_init)
+function [orb, t] = intpl_orbit(arr_days, r_init, v_init)
 %   INTERPLANETARY_ORBIT(arr_days, r_init, v_init) computes the 
 %   interplanetary orbit a spacecraft of 1000kg would travel
 %   around the Sun in ARR_DAYS days, starting at position R_INIT

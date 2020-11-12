@@ -8,10 +8,8 @@
 % Engineering Students, 3e" folder in Matlab-path
 
 %% TO DO list
-
 % aggiungere modalita` fade 
 % punti rilevanti (da plottare solo dopo avvenimenti)
-% capire come fare video alta qualita`
 
 %% intro
 clc; clear;
@@ -71,10 +69,10 @@ for d = 1:fr_skip:n_days
 	[~, Mars_now, ~, ~] = planet_elements_and_sv(4, ...
 								year_now, month_now, day_now, 0, 0, 0);
 	%Vesta (id = 10)
-	[~, Vesta_now, ~, ~] = planet_elements_and_sv2(10, ...
+	[~, Vesta_now, ~, ~] = planet_elements_and_sv(10, ...
 								year_now, month_now, day_now, 0, 0, 0);
 	%Ceres (id = 11)
-	[~, Ceres_now, ~, ~] = planet_elements_and_sv2(11, ...
+	[~, Ceres_now, ~, ~] = planet_elements_and_sv(11, ...
 								year_now, month_now, day_now, 0, 0, 0);
 	
 	% SpaceCraft
