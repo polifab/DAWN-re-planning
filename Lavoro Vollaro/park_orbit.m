@@ -90,10 +90,13 @@ function orb = park_orbit(obj_id, pos, radius, incl, raan)
     %Parking orbit
     Park_v0 = sqrt(obj_mu/(R+radius)); %[km/s]
     v0 = (Rotz(raan)*Rotx(incl)*[0; Park_v0; 0])'; %[km/s,km/s,km/s]
+    
+    %This or also 2*pi*(R+radius)/sqrt(planet_mu/(R+radius))
+    period = 2*pi*(R+radius)/norm(v0); 
 
     %Time
     t0 = 0; %[s]
-    tf = 100*hours; %[s]
+    tf = period;%100*hours; %[s]
 
     %% Numerical integration:
     
@@ -108,6 +111,7 @@ function orb = park_orbit(obj_id, pos, radius, incl, raan)
 
     return
 
+    %% Used functions
     %% ~~~~~~~~~~~~~~~~~~~~~~~~
     function dydt = rates(t,f)
     %{
@@ -141,7 +145,6 @@ function orb = park_orbit(obj_id, pos, radius, incl, raan)
     end %rates
     % ~~~~~~~~~~~~~~~~~~~~~~~
 
-
     %% ~~~~~~~~~~~~~~~~~~~~~~~
     function output
     %{
@@ -168,7 +171,7 @@ function orb = park_orbit(obj_id, pos, radius, incl, raan)
         body_sphere(obj_id,pos);
         hold on
         plot3(  pos(1)+y(:,1),    pos(2)+y(:,2),    pos(3)+y(:,3),...
-                                                   'r', 'LineWidth', 1)
+                                                   'm', 'LineWidth', 1)
 
     end %output
     % ~~~~~~~~~~~~~~~~~~~~~~~

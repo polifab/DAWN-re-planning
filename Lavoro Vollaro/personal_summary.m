@@ -51,9 +51,4 @@ plot_orbit.m:
 
                                 TODO:
 - fit planet images to their inclinations -> body_sphere
-- optimize parking orbits revolution time -> take period formula from gen_orbit
 - allow for retrograde escape orbit?
-- change parking orbit color?
-- use orbit to get out/in_angle in park_orbit and adapt it
-- park_out -> fix point addition
-- park_in -> done(flip, fix addition, fix if div!=0)
