@@ -1,10 +1,21 @@
 function [orb, ts] = ...
-            park_in(obj_id, body_pos, radius, coe, ref, start, finish)
-% PARK_ORBIT(obj_id, pos, dist, incl) computes the circular parking
-%   orbit of a spacecraft around OBJ_ID having the center in POS,
-%   radius RADIUS and inclination INCL.
+            park_in(obj_id, body_pos, radius, coe, p_ref, start, finish)
+% PARK_IN(obj_id, body_pos, radius, coe, ref, start, finish) computes the 
+%   circular parking orbit of a spacecraft around OBJ_ID having the center 
+%   in POS and radius RADIUS.
+%   The function assumes that the parking orbit follows an arrival
+%   hyperbole, takes a reference point P_REF from it and uses the desired
+%   orbital elements COE (of which will use the inclination and the RAAN): 
+%   it uses P_REF to ensure that's the first point in the parking orbit,
+%   "accomodating" in some way the orbit to its coordinates.
+%   START and FINISH are the time coordinates for which PARK_IN computes
+%   the parking orbit.
+% 
+%   In case of a parking orbit without the hypothesis of an arrival 
+%   hyperbole, it is sufficient to set p_ref = [0 0 0].
 %
-%   orb = PARK_ORBIT(...) returns the points composing the orbit.
+%   [orb, ts] = PARK_IN(...) returns the points composing the orbit and
+%   an array of time istants relative to each point.
 %
 %   It uses rkf45 to numerically integrate Equation 2.22 in
 %   "Orbital Mechanics for Engineering Students" - Howard D. Curtis.
@@ -101,27 +112,22 @@ function [orb, ts] = ...
     %Parking orbit
     park_v0 = sqrt(obj_mu/(R+radius)); %[km/s]
     
-    ref_point = ref - body_pos;
+    ref_point = p_ref - body_pos;
     ref_raan = deg2rad(atan2d_0_360(ref_point(2),ref_point(1)));
     
     %This or also 2*pi*(R+radius)/sqrt(obj_mu/(R+radius))
-    period = 2*pi*(R+radius)/park_v0;%norm(v0); 
+    period = 2*pi*(R+radius)/park_v0;
     
-    %COE and positions of the spacecraft at start and finish
+    %Computing the point relative to an Argument of Periapsis equal to 0
     TA_0 = wrapTo2Pi(2*pi*start_time/period);
     coe_0 = [(R+radius)*park_v0 0 raan incl 0 TA_0];
-%     coe_finish = [(R+radius)*park_v0 0 raan-TA_finish incl 0 TA_finish];
     sv_0 = sv_from_coe(coe_0, obj_mu);
     ang_0 = deg2rad(atan2d_0_360(sv_0(2),sv_0(1)));
     
-%     TA_finish = wrapTo2Pi(2*pi*finish_time/period);
-%     coe_finish = [(R+radius)*park_v0 0 raan incl ref_raan-ang_0 TA_finish];
-%     sv_finish = sv_from_coe(coe_finish, obj_mu);
-%     [r0, v0]  = sv_from_coe(coe_finish, obj_mu);
+    %Starting point considered for the parking orbit
     TA_start = wrapTo2Pi(2*pi*start_time/period);
-    coe_start = [-(R+radius)*park_v0 0 raan incl ref_raan-ang_0 TA_start];
-%     coe_start = [(R+radius)*park_v0 0 raan-TA_finish incl 0 TA_start];
-%     sv_start = sv_from_coe(coe_start,obj_mu);
+    coe_start = [(R+radius)*park_v0 0 raan incl ref_raan-ang_0 TA_start];
+    %This does not consider object absolute position
     [r0, v0] = sv_from_coe(coe_start,obj_mu);
 
 %     %Debug
@@ -129,13 +135,6 @@ function [orb, ts] = ...
 %     pos_start = sv_start + body_pos;
 %     plot3(pos_start(1),pos_start(2),pos_start(3),'bo')
 %     plot3(pos_finish(1),pos_finish(2),pos_finish(3),'bo')
-   
-    %Initial position and velocity of the spacecraft
-%     r0 = sv_finish; %[km,km,km] 
-%     v0 = (Rotz(pang)*Rotz(raan)*Rotx(incl)*[0;park_v0; 0])';
-%     v0 = (Rotz(pang)*[park_v0; 0; 0])';
-%     r0 = (Rotz(raan)*Rotx(incl)*[R+radius; 0; 0])';
-%     v0 = (Rotz(raan)*Rotx(incl)*[0; park_v0; 0])';
 
     %Time
     t0 = 0; %[s]
@@ -156,10 +155,10 @@ function [orb, ts] = ...
     %Here the function checks if the period of time spent in orbit by the
     %spacecraft is bigger or smaller than the time needed for a complete
     %revolution around the body, and it acts accordingly
-    if (div > 0)
+    if (div > 0) %more than a revolution
         y_app = zeros(size(y,1)*div,3);
         t_app = zeros(size(y,1)*div,1);
-        for i = 0:div-1
+        for i = 0:div-1 %for each revolution
             y_app(1+size(y,1)*i:size(y,1)*(i+1),1:3) = y(:,1:3);
             t_app(1+size(y,1)*i:size(y,1)*(i+1)) = t;
         end
@@ -173,6 +172,8 @@ function [orb, ts] = ...
             break;
         end
     end
+    
+    %Selecting the used part of the array for the last part of the orbit
     y_app = cat(1,y_app,y(1:ind,1:3));
     t_app = cat(1,t_app,t(1:ind));
 
@@ -252,10 +253,11 @@ function [orb, ts] = ...
         plot3(orb(1+size(y,1)*div:end,1),...
               orb(1+size(y,1)*div:end,2),...
               orb(1+size(y,1)*div:end,3),...
-              'b', 'LineWidth', 1) %change color to visualize last part
-%           plot3(orb(:,1),orb(:,2),orb(:,3),'g-')
-        plot3(orb(5,1),orb(5,2),orb(5,3),'go')
-        plot3(orb(10,1),orb(10,2),orb(10,3),'co')
+              'b', 'LineWidth', 1) %different color to visualize last part
+          
+%           DEBUG
+%         plot3(orb(5,1),orb(5,2),orb(5,3),'go')
+%         plot3(orb(10,1),orb(10,2),orb(10,3),'co')
     end %output
     % ~~~~~~~~~~~~~~~~~~~~~~~
 
