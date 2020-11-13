@@ -221,7 +221,7 @@ end
 xlabel('x')
 ylabel('y')
 zlabel('z')
-xlim([ 1.49698*10^8, 1.49715*10^8])
+xlim([1.49698*10^8, 1.49715*10^8])
 ylim([8.916*10^6, 8.932*10^6])
 zlim([-1*10^4, 10^4])
 view(-10,45)
@@ -229,8 +229,14 @@ grid
 title("Earth close-up")
 hold on
 
-park_orbit(3,Earth_r0,Epark_radius,Epark_inclination,orb_elem1(3));
-park_orbit(3,Earth_r0,Epark_radius,orb_elem1(4),orb_elem1(3));
+Earth_esc = escape_hyp(3,EM_orbit(1:2,1:3),[2007 9 27 0 0 0],...
+                                         Epark_radius, orb_elem1, sp_v1);
+
+[park_E0,t_E0] = park_out(3, Earth_r0, Epark_radius, orb_elem1,...
+                  Earth_esc(1,1:3), [2007,9,1,0,0,0], [2007,9,27,0,0,0]);
+
+% park_orbit(3,Earth_r0,Epark_radius,Epark_inclination,orb_elem1(3));
+% park_orbit(3,Earth_r0,Epark_radius,orb_elem1(4),orb_elem1(3));
 
 %           DEBUG
 % Etrack = [[EM_orbit(1,1);EM_orbit(2,1)] ...
@@ -240,9 +246,6 @@ park_orbit(3,Earth_r0,Epark_radius,orb_elem1(4),orb_elem1(3));
 %     [EM_orbit(end-1,2);EM_orbit(end,2)] ...
 %     [EM_orbit(end-1,3);EM_orbit(end,3)]];
 % plot3(Etrack(1:2,1),Etrack(1:2,2),Etrack(1:2,3),'k')
-
-escape_hyp(3,EM_orbit(1:2,1:3),[2007 9 27 0 0 0], Epark_radius,...
-                                orb_elem1, sp_v1);
 
 %% Earth SOI close-up
 if exist('figure2') == 0
@@ -262,7 +265,6 @@ grid
 title("Earth SOI close-up")
 hold on
 
-park_orbit(3,Earth_r0,Epark_radius,orb_elem1(4),orb_elem1(3));
 surface(Earth_r0(1)+Earth_SOI*xx, Earth_r0(2)+Earth_SOI*yy,...
         Earth_r0(3)+Earth_SOI*zz,'FaceColor','none','EdgeColor',colors(3))
 
@@ -277,6 +279,9 @@ surface(Earth_r0(1)+Earth_SOI*xx, Earth_r0(2)+Earth_SOI*yy,...
 
 hyperbola = escape_hyp(3,EM_orbit(1:2,1:3),[2007 9 27 0 0 0],...
                         Epark_radius, orb_elem1, norm(sp_vf1));
+                    
+park_out(3, Earth_r0, Epark_radius, orb_elem1,...
+                  Earth_esc(1,1:3), [2007,9,1,0,0,0], [2007,9,27,0,0,0]);
 
 %% Mars close-up
 if exist('figure2') == 0
@@ -299,14 +304,20 @@ hold on
 body_sphere(4,Mars_r1);
 
 %           DEBUG
-% Mrack = [[MV_orbit(1,1);MV_orbit(2,1)] ...
-%     [MV_orbit(1,2);MV_orbit(2,2)] ...
-%     [MV_orbit(1,3);MV_orbit(2,3)];...
-%     [MV_orbit(end-1,1);MV_orbit(end,1)] ...
-%     [MV_orbit(end-1,2);MV_orbit(end,2)] ...
-%     [MV_orbit(end-1,3);MV_orbit(end,3)]];
-% plot3(Mtrack(1:2,1),Mtrack(1:2,2),Mtrack(1:2,3),'k')
-% plot3(Etrack1(3:4,1),Etrack1(3:4,2),Etrack(3:4,3),'k')
+Etrack = [[EM_orbit(1,1);EM_orbit(2,1)] ...
+    [EM_orbit(1,2);EM_orbit(2,2)] ...
+    [EM_orbit(1,3);EM_orbit(2,3)];...
+    [EM_orbit(end-1,1);EM_orbit(end,1)] ...
+    [EM_orbit(end-1,2);EM_orbit(end,2)] ...
+    [EM_orbit(end-1,3);EM_orbit(end,3)]];
+Mtrack = [[MD_orbit(1,1);MD_orbit(2,1)] ...
+    [MD_orbit(1,2);MD_orbit(2,2)] ...
+    [MD_orbit(1,3);MD_orbit(2,3)];...
+    [MD_orbit(end-1,1);MD_orbit(end,1)] ...
+    [MD_orbit(end-1,2);MD_orbit(end,2)] ...
+    [MD_orbit(end-1,3);MD_orbit(end,3)]];
+plot3(Mtrack(1:2,1),Mtrack(1:2,2),Mtrack(1:2,3),'k')
+plot3(Etrack(3:4,1),Etrack(3:4,2),Etrack(3:4,3),'k')
 
 %% Mars SOI close-up
 if exist('figure2') == 0
@@ -332,14 +343,14 @@ surface(Mars_r1(1)+Mars_SOI*xx, Mars_r1(2)+Mars_SOI*yy,...
         Mars_r1(3)+Mars_SOI*zz,'FaceColor','none','EdgeColor',colors(4))
 
 %           DEBUG
-% Mtrack = [[MV_orbit(1,1);MV_orbit(2,1)] ...
-%     [MV_orbit(1,2);MV_orbit(2,2)] ...
-%     [MV_orbit(1,3);MV_orbit(2,3)];...
-%     [MV_orbit(end-1,1);MV_orbit(end,1)] ...
-%     [MV_orbit(end-1,2);MV_orbit(end,2)] ...
-%     [MV_orbit(end-1,3);MV_orbit(end,3)]];
-% plot3(Mtrack(:,1),Mtrack(:,2),Mtrack(:,3),'k')
-% plot3(Etrack1(3:4,1),Etrack1(3:4,2),Etrack(3:4,3),'k')
+% Mtrack = [[MD_orbit(1,1);MD_orbit(2,1)] ...
+%     [MD_orbit(1,2);MD_orbit(2,2)] ...
+%     [MD_orbit(1,3);MD_orbit(2,3)];...
+%     [MD_orbit(end-1,1);MD_orbit(end,1)] ...
+%     [MD_orbit(end-1,2);MD_orbit(end,2)] ...
+%     [MD_orbit(end-1,3);MD_orbit(end,3)]];
+% plot3(Mtrack(1:2,1),Mtrack(1:2,2),Mtrack(1:2,3),'k')
+% plot3(Etrack(3:4,1),Etrack(3:4,2),Etrack(3:4,3),'k')
 
 %% Vesta close-up (arrival)
 if exist('figure2') == 0
@@ -359,8 +370,12 @@ grid
 title("Vesta close-up (arrival)")
 hold on
 
-park_orbit(10,Vesta_r2,Vesta_hamo,orb_elem22(4),orb_elem22(3));
-park_orbit(10,Vesta_r2,Vesta_lamo,orb_elem3(4),orb_elem3(3));
+Vesta_cap = capture_hyp(10,MV_orbit(end-1:end,1:3),[2011 7 16 0 0 0],...
+                        Vesta_hamo,orb_elem22,sp_fromdawn);
+
+[park_V2,t_V2] = park_in(10, Vesta_r2, Vesta_hamo, orb_elem22,...
+                Vesta_cap(end,1:3), [2011,7,16,0,0,0], [2011,8,1,0,0,0]);
+
 
 r1 = (1.0e+08 * [ 1.964218321663772  -2.676871375732791  -0.158842884222893]);
 r2 = (1.0e+08 * [ 1.964225414871708  -2.676859686053302  -0.158844026563676]);
@@ -369,16 +384,13 @@ grade = 'pro';
 [orb_change_park, t_change_park, deltav_park] = cambio_orbita_park(Vesta_r2, r1, r2, tf, grade);
 
 %           DEBUG
-% Vtrack = [[MV_orbit(1,1);MV_orbit(2,1)] ...
-%     [MV_orbit(1,2);MV_orbit(2,2)] ...
-%     [MV_orbit(1,3);MV_orbit(2,3)];...
-%     [MV_orbit(end-1,1);MV_orbit(end,1)] ...
-%     [MV_orbit(end-1,2);MV_orbit(end,2)] ...
-%     [MV_orbit(end-1,3);MV_orbit(end,3)]];
-% plot3(Vtrack(end-1:end,1),Vtrack(end-1:end,2),Vtrack(end-1:end,3),'k')
-
-Vesta_cap = capture_hyp(10,MV_orbit(end-1:end,1:3),[2011 7 16 0 0 0],...
-                        Vesta_hamo,orb_elem22,sp_fromdawn);
+Vtrack = [[MV_orbit(1,1);MV_orbit(2,1)] ...
+    [MV_orbit(1,2);MV_orbit(2,2)] ...
+    [MV_orbit(1,3);MV_orbit(2,3)];...
+    [MV_orbit(end-1,1);MV_orbit(end,1)] ...
+    [MV_orbit(end-1,2);MV_orbit(end,2)] ...
+    [MV_orbit(end-1,3);MV_orbit(end,3)]];
+plot3(Vtrack(end-1:end,1),Vtrack(end-1:end,2),Vtrack(end-1:end,3),'k')
 
 %% Vesta SOI close-up (arrival)
 if exist('figure2') == 0
@@ -397,8 +409,6 @@ grid
 title("Vesta SOI close-up (arrival)")
 hold on
 
-park_orbit(10,Vesta_r2,Vesta_hamo,orb_elem22(4),orb_elem22(3));
-
 surface(Vesta_r2(1)+Vesta_SOI*xx, Vesta_r2(2)+Vesta_SOI*yy,...
      Vesta_r2(3)+Vesta_SOI*zz,'FaceColor','none','EdgeColor',colors(10))
 
@@ -413,6 +423,9 @@ surface(Vesta_r2(1)+Vesta_SOI*xx, Vesta_r2(2)+Vesta_SOI*yy,...
 
 capture_hyp(10,MV_orbit(end-1:end,1:3),[2011 7 16 0 0 0],...
                         Vesta_hamo,orb_elem22,sp_fromdawn);
+
+park_in(10, Vesta_r2, Vesta_hamo, orb_elem22,...
+                Vesta_cap(end,1:3), [2011,7,16,0,0,0], [2011,7,16,2,0,0]);
 
 %% Vesta close-up (departure)
 if exist('figure2') == 0
@@ -432,8 +445,8 @@ grid
 title("Vesta close-up (departure)")
 hold on
 
-park_orbit(10,Vesta_r3,Vesta_hamo,orb_elem22(4),orb_elem22(3));
-park_orbit(10,Vesta_r3,Vesta_lamo,orb_elem3(4),orb_elem3(3));
+% park_orbit(10,Vesta_r3,Vesta_hamo,orb_elem22(4),orb_elem22(3));
+% park_orbit(10,Vesta_r3,Vesta_lamo,orb_elem3(4),orb_elem3(3));
 
 %           DEBUG
 % Vtrack2 = [[VC_orbit(1,1);VC_orbit(2,1)] ...
@@ -444,8 +457,11 @@ park_orbit(10,Vesta_r3,Vesta_lamo,orb_elem3(4),orb_elem3(3));
 %     [VC_orbit(end-1,3);VC_orbit(end,3)]];
 % plot3(Vtrack2(1:2,1),Vtrack2(1:2,2),Vtrack2(1:2,3),'k')
 
-bol = escape_hyp(10,VC_orbit(1:2,1:3),[2012 9 5 0 0 0],Vesta_lamo,...
-                                             orb_elem3,sp_vf3);
+Vesta_esc = escape_hyp(10,VC_orbit(1:2,1:3),[2012 9 5 0 0 0],...
+                                        Vesta_lamo, orb_elem3,sp_vf3);
+
+[park_V3,t_V3] = park_out(10, Vesta_r3, Vesta_lamo, orb_elem3,...
+                  Vesta_esc(1,1:3), [2012,9,4,22,0,0], [2012,10,5,0,0,0]);
 
 %% Vesta SOI close-up (departure)
 if exist('figure2') == 0
@@ -465,10 +481,6 @@ grid
 title("Vesta SOI close-up (departure)")
 hold on
 
-body_sphere(10,Vesta_r3)
-
-park_orbit(10,Vesta_r3,Vesta_lamo,orb_elem3(4),orb_elem3(3));
-
 surface(Vesta_r3(1)+Vesta_SOI*xx, Vesta_r3(2)+Vesta_SOI*yy,...
       Vesta_r3(3)+Vesta_SOI*zz,'FaceColor','none','EdgeColor',colors(10))
   
@@ -483,6 +495,9 @@ surface(Vesta_r3(1)+Vesta_SOI*xx, Vesta_r3(2)+Vesta_SOI*yy,...
 
 escape_hyp(10,VC_orbit(1:2,1:3),[2012 9 5 0 0 0],...
             Vesta_lamo, orb_elem3, sp_v3);
+
+park_out(10, Vesta_r3, Vesta_lamo, orb_elem3,...
+                  Vesta_esc(1,1:3), [2012,9,4,22,0,0], [2012,10,5,0,0,0]);
 
 %% Ceres close-up 
 if exist('figure2') == 0
@@ -502,16 +517,17 @@ grid
 title("Ceres close-up")
 hold on
 
-park_orbit(11,Ceres_r4,Ceres_hamo,orb_elem3(4),orb_elem3(3));
-
 %           DEBUG
 % Ctrack = [[VC_orbit(end-1,1);VC_orbit(end,1)] ...
 %     [VC_orbit(end-1,2);VC_orbit(end,2)] ...
 %     [VC_orbit(end-1,3);VC_orbit(end,3)]];
 % plot3(Ctrack(:,1),Ctrack(:,2),Ctrack(:,3),'k')
 
-capture_hyp(11,VC_orbit(end-1:end,1:3),[2015 3 5 0 0 0],...
+Ceres_cap = capture_hyp(11,VC_orbit(end-1:end,1:3),[2015 3 5 0 0 0],...
                     Ceres_hamo,orb_elem3,sp_vf3);
+                
+[park_C4,t_C4] = park_in(11, Ceres_r4, Ceres_hamo, orb_elem3,...
+                Ceres_cap(end,1:3), [2015,3,5,0,0,0], [2015,4,1,0,0,0]);
 
 %% Ceres SOI close-up 
 if exist('figure2') == 0
@@ -531,10 +547,11 @@ grid
 title("Ceres SOI close-up")
 hold on
 
-park_orbit(11,Ceres_r4,Ceres_hamo,orb_elem3(4),orb_elem3(3));
-
 surface(Ceres_r4(1)+Ceres_SOI*xx, Ceres_r4(2)+Ceres_SOI*yy,...
       Ceres_r4(3)+Ceres_SOI*zz,'FaceColor','none','EdgeColor',colors(11))
+
+park_in(11, Ceres_r4, Ceres_hamo, orb_elem3,...
+                Ceres_cap(end,1:3), [2015,3,5,0,0,0], [2015,4,1,0,0,0]);
 
 %           DEBUG
 % Ctrack = [[VC_orbit(end-1,1);VC_orbit(end,1)] ...

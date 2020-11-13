@@ -1,9 +1,21 @@
-function orb = park_orbit(obj_id, pos, radius, incl, raan)
-% PARK_ORBIT(obj_id, pos, dist, incl) computes the circular parking
-%   orbit of a spacecraft around OBJ_ID having the center in POS,
-%   radius RADIUS and inclination INCL.
+function [orb, ts] = ...
+            park_out(obj_id, body_pos, radius, coe, p_ref, start, finish)
+% PARK_OUT(obj_id, body_pos, radius, coe, ref, start, finish) computes the 
+%   circular parking orbit of a spacecraft around OBJ_ID having the center 
+%   in POS and radius RADIUS.
+%   The function assumes that the parking orbit precedes an escape
+%   hyperbole, takes a reference point P_REF from it and uses the desired
+%   orbital elements COE (of which will use the inclination and the RAAN): 
+%   it uses P_REF to ensure that's the first point in the parking orbit,
+%   "accomodating" in some way the orbit to its coordinates.
+%   START and FINISH are the time coordinates for which PARK_IN computes
+%   the parking orbit.
+% 
+%   In case of a parking orbit without the hypothesis of an escape 
+%   hyperbole, it is sufficient to set p_ref = [0 0 0].
 %
-%   orb = PARK_ORBIT(...) returns the points composing the orbit.
+%   [orb, ts] = PARK_OUT(...) returns the points composing the orbit and
+%   an array of time istants relative to each point.
 %
 %   It uses rkf45 to numerically integrate Equation 2.22 in
 %   "Orbital Mechanics for Engineering Students" - Howard D. Curtis.
@@ -77,6 +89,17 @@ function orb = park_orbit(obj_id, pos, radius, incl, raan)
              695508]; %[km]
 
     %% Input data
+    
+    incl = coe(4);
+    raan = coe(3);
+    
+    %Time spent in orbit, from Julian days to seconds
+    start_time = J0(start(1),start(2),start(3))*86400 + ...
+                 start(4)*3600 + start(5)*60 + start(6); %[s]
+    finish_time = J0(finish(1),finish(2),finish(3))*86400 + ...
+                 finish(4)*3600 + finish(5)*60 + finish(6); %[s]
+	time = finish_time - start_time; %[s]
+    
     %Object
     m1 = masses(obj_id); %[kg]
     R  = radii(obj_id); %[km]
@@ -85,14 +108,33 @@ function orb = park_orbit(obj_id, pos, radius, incl, raan)
     m2 = 1000; %[kg]
     
     obj_mu    = G*(m1 + m2); %[km^3/s^2]
-    r0 = (Rotz(raan)*Rotx(incl)*[R+radius; 0; 0])'; %[km,km,km]
     
     %Parking orbit
-    Park_v0 = sqrt(obj_mu/(R+radius)); %[km/s]
-    v0 = (Rotz(raan)*Rotx(incl)*[0; Park_v0; 0])'; %[km/s,km/s,km/s]
+    park_v0 = sqrt(obj_mu/(R+radius)); %[km/s]
     
-    %This or also 2*pi*(R+radius)/sqrt(planet_mu/(R+radius))
-    period = 2*pi*(R+radius)/norm(v0); 
+    ref_point = p_ref - body_pos;
+    ref_raan = deg2rad(atan2d_0_360(ref_point(2),ref_point(1)));
+    
+    %This or also 2*pi*(R+radius)/sqrt(obj_mu/(R+radius))
+    period = 2*pi*(R+radius)/park_v0;
+    
+    %Computing the point relative to an Argument of Periapsis equal to 0
+    TA_0 = wrapTo2Pi(2*pi*finish_time/period);
+    coe_0 = [(R+radius)*park_v0 0 raan incl 0 TA_0];
+    sv_0 = sv_from_coe(coe_0, obj_mu);
+    ang_0 = deg2rad(atan2d_0_360(sv_0(2),sv_0(1)));
+    
+    %Final point considered for the parking orbit
+    TA_finish = wrapTo2Pi(2*pi*finish_time/period);
+    coe_finish = [(R+radius)*park_v0 0 raan incl ref_raan-ang_0 TA_finish];
+	%This does not consider object absolute position
+    [r0, v0]  = sv_from_coe(coe_finish, obj_mu);
+    
+%     %Debug
+%     pos_finish = r0+body_pos;%sv_finish + body_pos;
+%     pos_start = sv_start + body_pos;
+%     plot3(pos_start(1),pos_start(2),pos_start(3),'bo')
+%     plot3(pos_finish(1),pos_finish(2),pos_finish(3),'bo')
 
     %Time
     t0 = 0; %[s]
@@ -104,11 +146,46 @@ function orb = park_orbit(obj_id, pos, radius, incl, raan)
     y0    = [r0 v0]';
     [t,y] = rkf45(@rates, [t0 tf], y0);
 
-    %% Output the results:
-    output
+    %% Computations
+    div = floor(time/period);
+    y_app = [];
+    t_app = [];
+    ind = 0;
     
-    orb = pos + y(:,1:3);
+    time = time-div*period;
+    
+    %Checks the length of the last part of the parking orbit
+    for i = 1:length(t)
+        if (t(end)-t(i)<time)
+            ind = i;
+            break;
+        end
+    end
+    
+    %Here the function checks if the period of time spent in orbit by the
+    %spacecraft is bigger or smaller than the time needed for a complete
+    %revolution around the body, and it acts accordingly
+    if (div > 0)
+        y_app = zeros(size(y,1)*div,3);
+        t_app = zeros(size(y,1)*div,1);
+        for i = 0:div-1
+            app = [];
+            app = cat(1,app,y(ind+1:end,1:3));
+            app = cat(1,app,y(1:ind,1:3));
+            y_app(1+size(y,1)*i:size(y,1)*(i+1),1:3) = app;
+            t_app(1+size(y,1)*i:size(y,1)*(i+1)) = t;
+        end
+    end
+    
+    y_app = cat(1,y_app,y(ind:end,1:3));
+    t_app = cat(1,t_app,t(ind:end));
 
+    %% Setting output parameters
+    orb = body_pos + y_app;
+    ts = t_app;
+    
+    %% Output the results
+    output
     return
 
     %% Used functions
@@ -168,10 +245,22 @@ function orb = park_orbit(obj_id, pos, radius, incl, raan)
         fprintf('\n--------------------------------------------------------\n\n')
 
         %% Figure plot
-        body_sphere(obj_id,pos);
+        body_sphere(obj_id,body_pos);
         hold on
-        plot3(  pos(1)+y(:,1),    pos(2)+y(:,2),    pos(3)+y(:,3),...
-                                                   'm', 'LineWidth', 1)
+        if (div>0) %if more than a revolution
+            plot3(orb(1:size(y,1)*div,1),...
+                  orb(1:size(y,1)*div,2),...
+                  orb(1:size(y,1)*div,3),...
+                  'r', 'LineWidth', 1)
+        end
+        plot3(orb(1+size(y,1)*div:end,1),...
+              orb(1+size(y,1)*div:end,2),...
+              orb(1+size(y,1)*div:end,3),...
+              'b', 'LineWidth', 1) %change color to visualize last part
+
+%           DEBUG
+%         plot3(orb(5,1),orb(5,2),orb(5,3),'go')
+%         plot3(orb(10,1),orb(10,2),orb(10,3),'co')
 
     end %output
     % ~~~~~~~~~~~~~~~~~~~~~~~

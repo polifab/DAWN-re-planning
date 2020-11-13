@@ -1,10 +1,10 @@
 function [traj, delta_v] = ...
   capture_hyp(goal_id, orbit, arr_time, park_r, origin_coe, v_in)
-% ESCAPE_HYP(goal_id, orbit, arr_time, park_r, park_i, origin_coe, v_in)
+% CAPTURE_HYP(goal_id, orbit, arr_time, park_r, park_i, origin_coe, v_in)
 %   computes the trajectory the spacecraft will follow
 %   to enter the sphere of influence of object GOAL_ID at time
-%   ARR_TIME and to position itself into a circular parking orbit
-%   of radius PARK_R and inclination PARK_I.
+%   ARR_TIME and to position itself into a circular parking orbit of 
+%   radius PARK_R.
 %
 %   It uses the last points of the arrival interplanetary orbit 
 %   (computed via the patched conics method) stored in ORBIT to generate
@@ -113,22 +113,19 @@ function [traj, delta_v] = ...
     pl_mu = G * masses(goal_id); %[km^3/s^2]
     pl_radius = radii(goal_id); %[km]
     
-    park_i = origin_coe(4);
-
     %% Needed variables
     [~, pl_r0, v_arr, ~] =...
         planet_elements_and_sv(goal_id, arr_time(1),arr_time(2),...
                         arr_time(3),arr_time(4),arr_time(5),arr_time(6));
 
-    vinf = norm(v_arr-v_in);%norm(v_in-v_arr);
+    vinf = norm(v_arr-v_in); % [km/s^2] , v-infinity
 
-    rp = pl_radius + park_r;
-    e = 1 + rp*vinf^2/pl_mu;
-    a = rp/(e-1);
-    b = a*sqrt(e^2-1);
+    rp = pl_radius + park_r; % [km] perigee
+    e = 1 + rp*vinf^2/pl_mu; % eccentricity
+    a = rp/(e-1); % [km] semi-major axis
     
-    % target radius for the right hyperbola
-    Delta = rp*sqrt(1+2*pl_mu/(rp*vinf^2)); %Delta = sqrt(a*(1 - e^2)*pl_mu/vinf);
+    % target radius for the right hyperbola (Fig. 8.13-8.14 Curtis)
+    Delta = rp*sqrt(1+2*pl_mu/(rp*vinf^2)); % [km] aiming radius
     
     %Angle between arrival and departure branch of the hyperbola
     half_delta = asin(1/e);
@@ -137,90 +134,81 @@ function [traj, delta_v] = ...
     %vc = sqrt(2*pl_mu/rp);? Eq 8.59 with circular parking orbit
     vc = sqrt(pl_mu/rp); % velocity of parking orbit
 
-    beta = acos(1/e);
-    
-    h = Delta*vinf;
-    RA = origin_coe(3); %[rad]
-    incl = origin_coe(4); %[rad]
-    w = origin_coe(5); %[rad]
-    
-    TA = origin_coe(6); %[rad]
+    h = Delta*vinf; % [km^2/s] specific angular momentum
+    RA = origin_coe(3); %[rad] right ascension of ascending node
+    incl = origin_coe(4); %[rad] inclination
 
-    n = sqrt(pl_mu/a^3);
+    n = sqrt(pl_mu/a^3); % mean motion
     
     %% Trajectory computation
-    rr = zeros(100*24*3600/60,3);
+    hyp = zeros(100*24*3600/60,3);
     
+    %Angle and direction of the orbit at the entering point
     in_dir = (orbit(1,1:3)-orbit(2,1:3))'; %exit vector: (1,1:3)<-(2,1:3)
     in_angle = deg2rad(atan2d_0_360(in_dir(2),in_dir(1)));
 
+    %Initial point
     coe = [h, e, RA, incl, 0, 0];
     [rprova,~] = sv_from_coe(coe, pl_mu);
     alpha = deg2rad(atan2d_0_360(rprova(2),rprova(1)));
     
+    %Desired characteristics to align with the interplanetary orbit
     xi_des = in_angle - pi - half_delta;
     alpha_des = pi/2 + xi_des;
     w_des = alpha_des - alpha;        
+    
     counter = 1;
-    for t=0:60:100*24*3600%ceil(pl_SOI/norm(v_in))
+    for t=0:60:100*24*3600
+        %Using Kepler's method to compute the point
         M = n*t;
         F = kepler_H(e,M);
-        cosf = (cosh(F)-e)/(1-e*cosh(F));%Eq 3.41b %cosf = (e-cosh(F))/(e*cosh(F)-1);
+        cosf = (cosh(F)-e)/(1-e*cosh(F)); %(Eq. 3.41b) Curtis
         f = acos(cosf);
-        coe = [h, e, RA, incl, w_des, f];
+        
+        if (goal_id == 11) %to ensure desired alignment
+            coe = [h, e, RA, incl, w_des+pi,-f];
+        else 
+            coe = [h, e, RA, incl, w_des+pi,f];
+        end
         [r,~] = sv_from_coe(coe, pl_mu);
+        
+        %Sometimes the above algorithm produces NaN elements because of the
+        %kepler_H function (it seems not to be able to deal with high
+        %numbers)
         if(any(isnan(r)))
-            if(rr(2,:) ~= [0 0 0])
-                diff = rr(counter-1,:)-rr(counter-2,:);
+            if(hyp(2,:) ~= [0 0 0]) %from the third point onward
+                diff = hyp(counter-1,:)-hyp(counter-2,:);
                 diff = 60*norm(v_in)*diff/norm(diff);
-                point = rr(counter-1,:)' + diff';
-            else
-%                 diff = Rotz(RA)*Rotx(incl)*[round(norm(v_in)*t);0;0];
-%                 point = pl_r0' + rprova' + diff';
-%                 t = t + 24*3600;
-                coe = [h, e, RA, incl, w_des, t/6];
+                point = hyp(counter-1,:)' + diff';
+            else %first two points
+                if (goal_id > 4) %for outer planets/elements
+                    coe = [h, e, RA, incl, w_des+pi,-t/6];
+                else %for inner planets/elements
+                    coe = [h, e, RA, incl, w_des,t/6];
+                end
                 [peri,~] = sv_from_coe(coe, pl_mu);
                 point = pl_r0' + peri';
             end
-        else
+        else %if kepler_H returned a valid result
              point = pl_r0' + r';
         end
-        rr(counter,:) = point';
+        
+        %Adding the point to the list
+        hyp(counter,:) = point';
         counter = counter+1;
-        if all(rr(1,:) ~= [0 0 0]) && norm(point'-rr(1,:))>= pl_SOI
+        
+        %To stop computing when the SOI is exited
+        if (all(hyp(1,:) ~= [0 0 0]) && norm(point'-hyp(1,:))>= pl_SOI)
             break;
         end
     end
-    rr = rr(1:counter-2, 1:3);
-
-    %% Deleted because useless, I think
-    %Angle of orientation of escape trajectory
-%     in_dir = Rotz(origin_coe(3))'*Rotx(park_i)'*...
-%         (orbit(1,1:3)-orbit(2,1:3))'; %entry vector: (end-1,1:3)<-(end,1:3)
-%     in_angle = deg2rad(atan2d_0_360(in_dir(2),in_dir(1)));
-% 
-%     t = 0:0.1:5;
-% 
-%     %Parametric hyperbola equations
-%     xh_l = -a*cosh(t);
-%     xh_r = a*cosh(t);
-%     yh = b*sinh(t);
-%     
-%     hyp = [];
-%     for i = 1:length(t)
-%         point = pl_r0' + Rotz(origin_coe(3))*Rotx(park_i)*...
-%                     Rotz(in_angle)*Rotz(2*half_delta+beta)*...
-%                     ([xh_l(i); -yh(i);0] + [-(rp-a);0;0]);
-%         hyp = cat(1,hyp,point');
-%         if norm(hyp(size(hyp,1),:)-hyp(1,:))>= pl_SOI
-%             break;
-%         end
-%     end
+    %Getting rid of unused elements in the array
+    hyp = hyp(1:counter-2, 1:3);
     
     %% Hyperbola plot
-    plot3(rr(:,1),rr(:,2),rr(:,3),'b-')%plot3(hyp(:,1),hyp(:,2),hyp(:,3),'b-')
+    plot3(hyp(:,1),hyp(:,2),hyp(:,3),'m-')
     
     %% Output arguments
-    traj = rr;%flip(hyp);
+    traj = flip(hyp);
     delta_v = v_hyp - vc;
 end    
