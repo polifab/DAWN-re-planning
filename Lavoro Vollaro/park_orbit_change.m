@@ -45,9 +45,7 @@ function [orb, t, deltav] = ...
     [t,y] = rkf45(@rates, [0 tf], y0);
 
     %% Plotting
-%     
-%     new_r1 = body_pos + r1;
-%     new_r2 = body_pos + r2;
+    
     new_r1 = body_pos + y(1,1:3);
     new_r2 = body_pos + y(end,1:3);
 
