@@ -1,7 +1,8 @@
-function [flyby_parameters] = flyby(id_planet,theta_inf,altitude,flag,alpha_x,beta_y,gamma_z)
-
-%example id_planet = 4; theta = 129; altitude = 512; flag = 1; alpha_x = 0; beta_y = 0; gamma_z = 0; 
-%flyby(4,129,512,1,0,0,0);
+function [flyby_parameters] = flyby(planet_id,theta_inf,altitude,flag,year,month,day,hour,minute,second)
+global mu
+%example id_planet = 4; theta = 129; altitude = 512; flag = 1; year = 2009
+%        month = 02, day = 17, hour = 12, minute = 00, second = 00
+%flyby(4,129,512,1,2009,02,17,12,0,0);
 
 %% Parameters required from the function
 %Id_planet -> Code that indicates the planet where the flyby will be done
@@ -14,7 +15,7 @@ function [flyby_parameters] = flyby(id_planet,theta_inf,altitude,flag,alpha_x,be
 %beta_y  -> Rotation angle rispect Y axis
 %gamma_z -> Rotation angle rispect Z axis 
 %% Starting parameters
-planet = inf_planet(id_planet); %This command gives back a vector that contains planet's data:
+planet = inf_planet(planet_id); %This command gives back a vector that contains planet's data:
                                 %planet(1) = the radius 
                                 %planet(2) = the radius of the sphere of influence
                                 %planet(3) = the name
@@ -37,6 +38,12 @@ b = a*sqrt(e^2-1); %Semiaxis minor of hyperbole
 %% Parameter provided by the function
 %flyby_parameters: vettor that contains flyby's parameters in this
 %order [planet(3) planet(1) planet(2) altitude theta_inf beta delta e a b]
+%% Planet position on the considered date
+mu = str2double(planet(3));
+[coe, r, v, jd] = planet_elements_and_sv(planet_id, year, month, day, hour, minute, second);
+R_sun_planet = sqrt(r*r');
+longitude_angle = asin( r(3) / R_sun_planet );
+angle_sun_planet = acos( r(1) / (R_sun_planet*cos(longitude_angle)) );
 %% Coordinates vectors 
 x = [];     
 y = [];     
@@ -78,51 +85,67 @@ Y_max = b*sinh(-theta_inf*deg);
     x_a = (cos(theta_inf*deg)*str2double(planet(2)))-abs(rp)-a:1:X_max;
     y_a = tan(beta*deg)*(x_a - X_max) + Y_max;
     %Save the coordinates of the third part of trajectory
-    x = [x x_a];    
-	y = [y y_a];    
-    z = [z zeros(1,length(x_a))]; 
+    x = [x x_a]';    
+	y = [y y_a]';    
+    z = [z zeros(1,length(x_a))]'; 
+    x = x + [abs(e*a)*ones(1,length(x))]';
 %% Rotation Matrix
-R_x = [1 0 0; 0 cos(alpha_x*deg) sin(-alpha_x*deg); 0 sin(alpha_x*deg) cos(alpha_x*deg);];
-R_y = [cos(beta_y*deg) 0 sin(beta_y*deg); 0 1 0; -sin(beta_y*deg) 0 cos(beta_y*deg)];
-R_z = [cos(gamma_z*deg) -sin(gamma_z*deg) 0; sin(gamma_z*deg) cos(gamma_z*deg) 0; 0 0 1];
+%R_x = [1 0 0; 0 cos(alpha_x*deg) sin(-alpha_x*deg); 0 sin(alpha_x*deg) cos(alpha_x*deg);];
+R_y = [cos(longitude_angle) 0 sin(longitude_angle); 0 1 0; -sin(longitude_angle) 0 cos(longitude_angle)];
+R_z = [cos(angle_sun_planet) -sin(angle_sun_planet) 0; sin(angle_sun_planet) cos(angle_sun_planet) 0; 0 0 1];
 %% Plot the Hyperbolic Trajectory 
 grid on;
 figure(1);
 axis equal;
-G1 = [flag*x' y' z']; %Transposes the G1 Matrix 
-G1 = G1*R_x*R_y*R_z; %Executes the rotation 
+G1 = [flag*x y z]; %Transposes the G1 Matrix 
+G1 = G1*R_y*R_z; %Executes the rotation 
+% Translation to have the Sun in the coordinates (0,0,0) 
+i = 1;
+while i <= length(x)
+    j = 1;
+    while j <= 3
+        G1(i,j) = G1(i,j) + r(j);
+        j = j + 1;
+    end
+    i = i + 1;
+end
 hold on;
     figure(1);
     % Plot the trajectory of the spaceship
     plot3(G1(:,1),G1(:,2),G1(:,3));
     % Plot the circle that rapresent the planet
-    x = -abs(rp)-abs(a);
-    y = 0;
     th = 0:pi/360:2*pi;
-    xunit = str2double(planet(1)) * cos(th) + flag*x;
-    yunit = str2double(planet(1)) * sin(th) + y;
-    plot(xunit, yunit);
+    xunit = str2double(planet(1)) * cos(th) + r(1);
+    yunit = str2double(planet(1)) * sin(th) + r(2);
+    zunit = r(3)*ones(1,length(xunit));
+    plot3(xunit, yunit, zunit);
     % Plot the circle that rapresent the radius of influnce of the planet 
-    x = flag*(-abs(rp)-abs(a));
-    y = 0;
     th = 0:pi/360:2*pi;
-    xunit = str2double(planet(2)) * cos(th) + flag*x;
-    yunit = str2double(planet(2)) * sin(th) + y;
-    plot(xunit, yunit);
+    xunit = str2double(planet(2)) * cos(th) + r(1);
+    yunit = str2double(planet(2)) * sin(th) + r(2);
+    zunit = r(3)*ones(1,length(xunit));
+    plot3(xunit, yunit, zunit);
     title("Flyby trajectory close " + planet(4));
+    % Plot the circle that rapresent the Sun
+    sun_posiont = [0 0 0];
+    th = 0:pi/360:2*pi;
+    xunit = 6.96*10^5 * cos(th) + sun_posiont(1);
+    yunit = 6.96*10^5 * sin(th) + sun_posiont(2);
+    zunit = zeros(1,length(xunit));
+    plot3(xunit, yunit, zunit);
 hold off;
 %% Polar coordinates of flyby and plot
-    r =[]; %this vector conteins the distance from the center of planet and the 
+    rr =[]; %this vector conteins the distance from the center of planet and the 
            %point on the spaceship's trajectory 
     i = 1;
     while i <= length(theta)
         vett_r = rp/(1+e*cos(theta(i)*deg)); 
-        r = [r flag*vett_r]; %save the distance
+        rr = [rr flag*vett_r]; %save the distance
         i = i + 1;
     end
     % Plot the spaceship's trajectory
     figure('Name','Polar Plot Flyby on ' + planet(4));
-    polarplot(theta*deg,r);
+    polarplot(theta*deg,rr);
     title("Polar Plot Flyby trajectory close " + planet(4));
     hold on;
     % Plot the planet's influence circle
@@ -130,7 +153,7 @@ hold off;
     rr = str2double(planet(2))*ones(1,length(t));
     polarplot(t*deg,rr,'-.');
     thetaticks([0:10:360]);
-    polarplot(-e*a*flag,'.-k')
+    polarplot(0,'.-k');
     % limit the plot to planet's influence circle
     rlim([0 str2double(planet(2))]);
     hold off;
@@ -145,4 +168,6 @@ hold off;
     fprintf('\n   V infinity                      = ' + string(sqrt(str2double(planet(3))/a))+ ' (km/s)' + '%g\n') 
     fprintf('\n   Semi major axis                 = ' + string(a) + ' (km) %g\n')
     fprintf('\n   Semi minor axis                 = ' + string(b)+ ' (km)' + '\n')
+    
+    flyby_parameters = [planet(3) planet(1) planet(2) altitude theta_inf beta delta e a b];
 end

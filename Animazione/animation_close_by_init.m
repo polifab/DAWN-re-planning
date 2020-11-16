@@ -95,33 +95,11 @@ radii = [2439.7
 [Ceres_coe4, Ceres_r4, Ceres_v4, ~] =...
                         planet_elements_and_sv(11,2015,3,5,0,0,0);
 
-%% Earth Close by
+%% intl orbits (only needed ones)
 
-[body_pos1, sp_v1, body_posf1, sp_vf1,tof1, orb_elem1] = ...
-                gen_orbit(3,4,[2007 9 27 0 0 0], [2009 2 17 0 0 0],0);
-[EM_orbit, t_EM] = intpl_orbit(tof1, Earth_r0, sp_v1);		
 
-orbit_E = park_orbit(3, Earth_r0, Epark_radius, orb_elem1(4), orb_elem1(3));
 
-% removing some points
-orbit_E(1:floor(size(orbit_E,1)*4/5),:) = [];
-
-hyperbola_E = escape_hyp(3,EM_orbit(1:2,1:3),[2007 9 27 0 0 0],...
-                        Epark_radius, orb_elem1, norm(sp_vf1));
-
-spcr_E = [];
-spcr_E = cat(1, spcr_E, orbit_E);
-spcr_E = cat(1, spcr_E, hyperbola_E);
-
-%% Mars fly by
-
-%spcr_M = ;
-
-%% Vesta close by
-
-%intro
-[body_pos3, sp_v3, body_posf3, sp_vf3, tof3, orb_elem3] = ...
-                gen_orbit(10,11,[2012 9 5 0 0 0],[2015 3 5 0 0 0],0);
+%mars-vesta intl orbit
 [body_pos21, sp_todawn, body_posf21, sp_vf21, tof21, orb_elem21] = ...
                 gen_orbit(4,10,[2009 2 17 0 0 0],[2011 7 16 0 0 0],1);
 [body_pos22, sp_fromdawn, body_posf22, sp_vf22, tof22, orb_elem22] = ...
@@ -129,51 +107,84 @@ spcr_E = cat(1, spcr_E, hyperbola_E);
 MD_orbit = intpl_orbit(tof21,Mars_r1,sp_todawn);
 DV_orbit = intpl_orbit(tof22,body_posf21,sp_fromdawn);
 MV_orbit = [MD_orbit;DV_orbit];
-% to ceres
+
+%vesta ceres inlt orbit
+[body_pos3, sp_v3, body_posf3, sp_vf3, tof3, orb_elem3] = ...
+                gen_orbit(10,11,[2012 9 5 0 0 0],[2015 3 5 0 0 0],0);
 VC_orbit = intpl_orbit(tof3,Vesta_r3,sp_v3);
+
+
+
+%% Earth Close by
+
+[body_pos1, sp_v1, body_posf1, sp_vf1,tof1, orb_elem1] = ...
+                gen_orbit(3,4,[2007 9 27 0 0 0], [2009 2 17 0 0 0],0);
 			
-			
+[EM_orbit, t_EM] = intpl_orbit(tof1, Earth_r0, sp_v1);		
+
+Earth_esc = escape_hyp(3,EM_orbit(1:2,1:3),[2007 9 27 0 0 0],...
+                                         Epark_radius, orb_elem1, sp_v1);
+									 
+[park_E0,t_E0] = park_out(3, Earth_r0, Epark_radius, orb_elem1,...
+                  Earth_esc(1,1:3), [2007,9,1,0,0,0], [2007,9,27,0,0,0]);
+
+			  
+% catting sp points			  
+
+spcr_E = [];
+spcr_E = cat(1, spcr_E, park_E0);
+spcr_E = cat(1, spcr_E, Earth_esc);
+
+% time vector
+days_Earth = ymd_gen([2007,9,1], [2007,9,27]);
+
+%% Mars fly by
+
+%spcr_M = ;
+
+%% Vesta close by
+
+
+
 % arrival
-%park_orbit(10,Vesta_r2,Vesta_hamo,orb_elem22(4),orb_elem22(3));
-orbit_V_arr			= park_orbit(10,Vesta_r2,Vesta_lamo,orb_elem3(4),orb_elem3(3));
-hyperbola_V_arr		= capture_hyp(10,MV_orbit(end-1:end,1:3),[2011 7 16 0 0 0],...
-									 Vesta_hamo,orb_elem22,sp_fromdawn);
+Vesta_cap = capture_hyp(10,MV_orbit(end-1:end,1:3),[2011 7 16 0 0 0],...
+                        Vesta_hamo,orb_elem22,sp_fromdawn);
+
+[park_V2,t_V2] = park_in(10, Vesta_r2, Vesta_hamo, orb_elem22,...
+                Vesta_cap(end,1:3), [2011,7,16,0,0,0], [2011,8,1,0,0,0]);
 
 
-
-% change park orbits?						 
-
-
+r1 = (1.0e+08 * [ 1.964218321663772  -2.676871375732791  -0.158842884222893]);
+r2 = (1.0e+08 * [ 1.964225414871708  -2.676859686053302  -0.158844026563676]);
+tf = 12000;
+grade = 'pro';
+[orb_change_park, t_change_park, deltav_park] = cambio_orbita_park(Vesta_r2, r1, r2, tf, grade);
 
 % departure
-%park_orbit(10,Vesta_r3,Vesta_hamo,orb_elem22(4),orb_elem22(3));
-orbit_V_dep			= park_orbit(10,Vesta_r3,Vesta_lamo,orb_elem3(4),orb_elem3(3));
-hyperbola_V_dep		= escape_hyp(10,VC_orbit(1:2,1:3),[2012 9 5 0 0 0],Vesta_lamo,...
-                                             orb_elem3,sp_vf3);
-							
-% reduce dimensions								 
-hyperbola_V_arr = flip(hyperbola_V_arr,1);
-hyperbola_V_arr(1:floor(size(hyperbola_V_arr,1)*28.5/29),:) = [];		
-hyperbola_V_dep(floor(size(hyperbola_V_dep,1)*1/39):end,:) = [];
+Vesta_esc = escape_hyp(10,VC_orbit(1:2,1:3),[2012 9 5 0 0 0],...
+                                        Vesta_lamo, orb_elem3,sp_vf3);
+
+[park_V3,t_V3] = park_out(10, Vesta_r3, Vesta_lamo, orb_elem3,...
+                  Vesta_esc(1,1:3), [2012,9,4,22,0,0], [2012,10,5,0,0,0]);
+
+% reduce hyperbola capture and exit dimension
+Vesta_cap(1:(end-1e3),:) = [];
+Vesta_esc(1e3:end,:) = [];
 
 % stacking
 spcr_V = [];
-spcr_V = cat(1, spcr_V, hyperbola_V_arr);
-spcr_V = cat(1, spcr_V, orbit_V_arr);
-spcr_V = cat(1, spcr_V, orbit_V_dep);
-spcr_V = cat(1, spcr_V, hyperbola_V_dep);
+spcr_V = cat(1, spcr_V, Vesta_cap			-Vesta_r2);
+spcr_V = cat(1, spcr_V, park_V2				-Vesta_r2);
+spcr_V = cat(1, spcr_V, orb_change_park		-Vesta_r2);
+spcr_V = cat(1, spcr_V, park_V3				-Vesta_r3);
+spcr_V = cat(1, spcr_V, Vesta_esc			-Vesta_r3);
 
 %% Ceres close by
 
-% arrival
-hyperbola_C = capture_hyp(11,VC_orbit(end-1:end,1:3),[2015 3 5 0 0 0],...
-							Ceres_hamo,orb_elem3,sp_vf3);
-orbit_C		= park_orbit(11,Ceres_r4,Ceres_hamo,orb_elem3(4),orb_elem3(3));
-
 % stacking
-spcr_C = [];
-spcr_C = cat(1, spcr_C, hyperbola_C);
-spcr_C = cat(1, spcr_C, orbit_C);
+% spcr_C = [];
+% spcr_C = cat(1, spcr_C, hyperbola_C);
+% spcr_C = cat(1, spcr_C, orbit_C);
 
 
 %% Animations Parameters

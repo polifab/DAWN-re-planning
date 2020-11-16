@@ -47,12 +47,11 @@ addpath('functions');
 addpath('models');
 
 % prompt figure(1) HD
+figh = figure(1);
+clf
 if movie_mode == 2
-	figure(1)
-	clf
-	text(0.35,0.5,'Maximize this window, then return to matlab and press any key.', 'FontSize',14)
-	text(0.4,0.45,'Note that a 1080p resolution is needed.', 'FontSize',14)
-	pause
+	warning('Note that a 1080p resolution is needed for movie_mode = 2')
+	figh.WindowState = 'maximize';
 end
 
 %% Earth Close by
@@ -64,7 +63,6 @@ disp('Earth Close by animation started!')
 figh = figure(1);
 clf 
 % figure settings
-set(gca, 'drawmode', 'fast');
 lighting phong;
 set(gcf, 'Renderer', 'zbuffer');
 axis equal
@@ -101,6 +99,7 @@ n = size(y,1)-200;
 k = 1;
 hold on
 for i = 1:fr_skip:n
+% for i = 1:100:n
 	
 	% initial inspection of dawn spacecraft
 	if i == 1 && initial_spin
@@ -268,17 +267,12 @@ end
 
 %% Vesta Close By
 if only_closeby == 3 || only_closeby == 0
-
-% DELETEME!!
-fr_skip	= 1;
-
 clc
 disp('Vesta Close by animation started!')
 
 figh = figure(1);
 clf 
 % figure settings
-set(gca, 'drawmode', 'fast');
 lighting phong;
 set(gcf, 'Renderer', 'zbuffer');
 axis equal
@@ -290,7 +284,8 @@ zlabel('Z [km]')
 grid on
 
 % Edit inputs to iterations
-y = spcr_V-Vesta_r2;				% positions of spacecraft relative to planet
+y = spcr_V;				% positions of spacecraft relative to planet 
+						% already done in init.m
 id_planet = 10;
 scale_dawn = 50;					% to edit!
 
@@ -314,8 +309,11 @@ set(p_dawn, 'EdgeColor', col_dawn_edge);		% Set the edge colour
 n = size(y,1);
 k = 1;
 hold on
-for i = 1:fr_skip:n
-	
+% for i = 1:fr_skip:n
+for i = 1:2:n
+	if i ~= 1
+		delete(traj)
+	end
 			
 	%----------------------------------------------------------------------
 	% dawn update
@@ -334,8 +332,11 @@ for i = 1:fr_skip:n
 	Title = ['Vesta Close Up'];
 	title(Title)
 	
+	phase_time_advance = 200;
+	phase_time_wait = 200;
+	
 	% axis lims
-	if  i <= size(hyperbola_V_arr,1)
+	if  i <= size(Vesta_cap,1) - phase_time_advance
 		% arriving
 		close_index = max(i-10,1);
 		close_gap = 2e3;
@@ -351,24 +352,83 @@ for i = 1:fr_skip:n
 		maxz = max(y(close_index:i,3))+close_gap;
 		zlim([minz, maxz]);
 		
-	elseif i < (size(y,1)-size(hyperbola_V_dep,1))
-		phase_i = size(hyperbola_V_arr,1); % initial i of this phase
+	elseif i < (size(y,1)-size(Vesta_esc,1)) - phase_time_advance
 		%orbiting
-		%departing
-		minx = min(min(y(phase_i:i,1))-lim_gap, -radii(id_planet)-lim_gap);
-		maxx = max(max(y(phase_i:i,1))+lim_gap, +radii(id_planet)+lim_gap);
-		xlim(scale_lims*[minx, maxx]);
+		phase_i = size(Vesta_cap,1); % "true" initial i of this phase
+		
+		% temporary?
+		if i < phase_i
+			phase_i = phase_i - phase_time_advance;
+			lim_gap = 1000;
+			
+			% sets lims
+			minx = min(min(y(phase_i:i,1))-lim_gap, -radii(id_planet)-lim_gap);
+			maxx = max(max(y(phase_i:i,1))+lim_gap, +radii(id_planet)+lim_gap);
+			xlim(scale_lims*[minx, maxx]);
 
-		miny = min(min(y(phase_i:i,2))-lim_gap, -radii(id_planet)-lim_gap);
-		maxy = max(max(y(phase_i:i,2))+lim_gap, +radii(id_planet)+lim_gap);
-		ylim(scale_lims*[miny, maxy]);
+			miny = min(min(y(phase_i:i,2))-lim_gap, -radii(id_planet)-lim_gap);
+			maxy = max(max(y(phase_i:i,2))+lim_gap, +radii(id_planet)+lim_gap);
+			ylim(scale_lims*[miny, maxy]);
 
-		minz = min(min(y(phase_i:i,3))-lim_gap, -radii(id_planet)-lim_gap);
-		maxz = max(max(y(phase_i:i,3))+lim_gap, +radii(id_planet)+lim_gap);
-		zlim([minz, maxz]);
+			minz = min(min(y(phase_i:i,3))-lim_gap, -radii(id_planet)-lim_gap);
+			maxz = max(max(y(phase_i:i,3))+lim_gap, +radii(id_planet)+lim_gap);
+			zlim([minz, maxz]);
+			
+			
+		elseif i < phase_i + phase_time_wait
+			
+			
+			i_0 = phase_i - phase_time_advance;
+			i_1 = phase_i + phase_time_wait;
+			ii	= (phase_i + phase_time_wait - i)/phase_time_wait; 
+			
+			
+			% calculate initial lims
+			lim_gap = 400;
+			minx_0 = min(min(y(i_0,1))-lim_gap, -radii(id_planet)-lim_gap);
+			maxx_0 = max(max(y(i_0,1))+lim_gap, +radii(id_planet)+lim_gap);
+			
+			miny_0 = min(min(y(i_0,2))-lim_gap, -radii(id_planet)-lim_gap);
+			maxy_0 = max(max(y(i_0,2))+lim_gap, +radii(id_planet)+lim_gap);
+
+			minz_0 = min(min(y(i_0,3))-lim_gap, -radii(id_planet)-lim_gap);
+			maxz_0 = max(max(y(i_0,3))+lim_gap, +radii(id_planet)+lim_gap);
+			
+			% calculate final lims
+			lim_gap = 200;
+			minx_1 = min(min(y(phase_i:i_1,1))-lim_gap, -radii(id_planet)-lim_gap);
+			maxx_1 = max(max(y(phase_i:i_1,1))+lim_gap, +radii(id_planet)+lim_gap);
+			
+			miny_1 = min(min(y(phase_i:i_1,2))-lim_gap, -radii(id_planet)-lim_gap);
+			maxy_1 = max(max(y(phase_i:i_1,2))+lim_gap, +radii(id_planet)+lim_gap);
+			
+			minz_1 = min(min(y(phase_i:i_1,3))-lim_gap, -radii(id_planet)-lim_gap);
+			maxz_1 = max(max(y(phase_i:i_1,3))+lim_gap, +radii(id_planet)+lim_gap);
+			
+			% sets lims
+			xlim(scale_lims*[minx_0 * ii + minx_1 * (1-ii), maxx_0 * ii + maxx_1 * (1-ii)])
+			ylim(scale_lims*[miny_0 * ii + miny_1 * (1-ii), maxy_0 * ii + maxy_1 * (1-ii)])
+			zlim([minz_0 * ii + minz_1 * (1-ii), maxz_0 * ii + maxz_1 * (1-ii)])
+		else
+			lim_gap = 400;
+			% sets lims
+			minx = min(min(y(phase_i:i,1))-lim_gap, -radii(id_planet)-lim_gap);
+			maxx = max(max(y(phase_i:i,1))+lim_gap, +radii(id_planet)+lim_gap);
+			xlim(scale_lims*[minx, maxx]);
+
+			miny = min(min(y(phase_i:i,2))-lim_gap, -radii(id_planet)-lim_gap);
+			maxy = max(max(y(phase_i:i,2))+lim_gap, +radii(id_planet)+lim_gap);
+			ylim(scale_lims*[miny, maxy]);
+
+			minz = min(min(y(phase_i:i,3))-lim_gap, -radii(id_planet)-lim_gap);
+			maxz = max(max(y(phase_i:i,3))+lim_gap, +radii(id_planet)+lim_gap);
+			zlim([minz, maxz]);
+		end
+		
+		
 	else
 		
-		phase_i = (size(y,1)-size(hyperbola_V_dep,1)); % initial i of this phase
+		phase_i = (size(y,1)-size(Vesta_esc,1)); % initial i of this phase
 		%departing
 		minx = min(min(y(phase_i:i,1))-lim_gap, -radii(id_planet)-lim_gap);
 		maxx = max(max(y(phase_i:i,1))+lim_gap, +radii(id_planet)+lim_gap);
