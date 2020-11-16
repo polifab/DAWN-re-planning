@@ -160,7 +160,7 @@ function [orb, ts] = ...
         t_app = zeros(size(y,1)*div,1);
         for i = 0:div-1 %for each revolution
             y_app(1+size(y,1)*i:size(y,1)*(i+1),1:3) = y(:,1:3);
-            t_app(1+size(y,1)*i:size(y,1)*(i+1)) = t;
+            t_app(1+size(y,1)*i:size(y,1)*(i+1)) = t+i*t(end);
         end
         time = time-div*period;
     end
@@ -175,7 +175,7 @@ function [orb, ts] = ...
     
     %Selecting the used part of the array for the last part of the orbit
     y_app = cat(1,y_app,y(1:ind,1:3));
-    t_app = cat(1,t_app,t(1:ind));
+    t_app = cat(1,t_app,t(1:ind)+div*t(end));
 
     %% Setting output parameters
     orb = body_pos + y_app;

@@ -46,9 +46,24 @@ park_orbit.m:
 plot_orbit.m:
     - plots orbit of all the planets, plus Vesta, Ceres and the Sun
     - with year indication, for a better orbit plot
+        
+park_orbit_change.m:
+    - computes and plots the trajectory to change parking orbit
+    - uses Lambert
 
-
-
+park_in.m:
+    - computes a parking orbit using an arrival point as reference
+    - since the orbit is circular, the perigee can be chosen by us
+    - perigee at entrance point
+    
+park_out.m:
+    - computes a parking orbit using an escape point as reference
+    - since the orbit is circular, the perigee can be chosen by us
+    - perigee at the point where the last part of orbit starts
+    
+Rotx.m, Roty.m, Rotz.m:
+    - rotational matrices
+    
                                 TODO:
 - fit planet images to their inclinations -> body_sphere
 - allow for retrograde escape orbit?
