@@ -178,7 +178,7 @@ function [orb, ts] = ...
     end
     
     y_app = cat(1,y_app,y(ind:end,1:3));
-    t_app = cat(1,t_app,t(ind:end)+i*t(end));
+    t_app = cat(1,t_app,t(ind:end)+div*t(end));
 
     %% Setting output parameters
     orb = body_pos + y_app;
