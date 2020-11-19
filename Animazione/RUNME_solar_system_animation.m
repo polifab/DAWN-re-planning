@@ -7,15 +7,10 @@
 % Attention: this script requires "M-Files for Orbital Mechanics for 
 % Engineering Students, 3e" folder in Matlab-path
 
-%% TO DO list
-% aggiungere modalita` fade 
-% punti rilevanti (da plottare solo dopo avvenimenti)
-
 %% intro
 clc; clear;
 
-movie_mode = 1; % 1 for movie writing, 0 for only matlab animation 
-
+movie_mode		= 0;	% 1 for movie writing, 2 for HD movie, 0 for only matlab animation
 addpath('functions');
 
 solar_system_animation_init;	% init all par, constants and plot parameters
@@ -25,20 +20,18 @@ pos_spcr_solar;					% computes the position of the spacecraft
 %% Solar System Plot and Animation
 figh = figure(1);
 clf 
-%set(	gca, 'drawmode', 'fast');
 set(gcf, 'Renderer', 'zbuffer');
 set(gca, 'color', col_bkgnd)
 ax = gca;
 ax.GridColor = col_grid; 
-%set(gcf,'color','white')
 hold on
 
 % Orbits (NOT ACCURATE, SHOULD BE UPDATED EACH YEAR) 
 % TEMPORARY
-plot_orbit2(3,	time_vector(1,1), planet_linewidth)	%Earth
-plot_orbit2(4,	time_vector(1,1), planet_linewidth)	%Mars
-plot_orbit2(10, time_vector(1,1), planet_linewidth)	%Vesta
-plot_orbit2(11, time_vector(1,1), planet_linewidth)	%Ceres
+plot_orbit2(3,	time_vector(1,1), planet_linewidth)		%Earth
+plot_orbit2(4,	time_vector(1,1), planet_linewidth)		%Mars
+plot_orbit2(10, time_vector(end,1), planet_linewidth)	%Vesta
+plot_orbit2(11, time_vector(end,1), planet_linewidth)	%Ceres
 
 
 for d = 1:fr_skip:n_days
@@ -146,7 +139,6 @@ for d = 1:fr_skip:n_days
 	xlim([-xy_lim, xy_lim]);
 	ylim([-xy_lim, xy_lim]);
 	zlim([-z_lim, z_lim]);
-	grid on;
 	drawnow;
 	
 	if time_pause ~= 0
@@ -155,10 +147,12 @@ for d = 1:fr_skip:n_days
 	
 	%----------------------------------------------------------------------
 	% write video
-	if movie_mode
-		%movieVector(k) = getframe(figh);
-		%open to fullscreen figure(1) before using the next line
-		movieVector(k) = getframe(figh, [10,10,1910,960]);
+	if movie_mode ~= 0
+		if movie_mode == 1
+			movieVector(k) = getframe(figh);
+		elseif movie_mode == 2
+			movieVector(k) = getframe(figh, [10,10,1910,960]);
+		end		
 		k = k+1;
 	end
 end

@@ -1,12 +1,12 @@
 %% General parameters - To edit
 % animation rates
 time_pause = 0;		% time [s] after each drawing. Set to zero to avoid pausing
-fr_skip = 20 +1;	% frame skip between each drawing
+fr_skip = 0 +1;		% frame skip between each drawing
 
 % view angles
-View = [30 10];				% initial view
-spinlon = 120;				% how much view angle change long [grad]
-spinlat = 20;				% how much view angle change lat[grad]
+View = [90 35];				% initial view
+spinlon = -45;				% how much view angle change long [grad]
+spinlat = -29;				% how much view angle change lat [grad]
 
 %% Constants
 global mu
@@ -92,7 +92,7 @@ n_days = size(time_vector,1);
 status_msg = ['Nothing'];
 
 % axis lim in plots
-xy_lim = 5e8;	%lim in xy plane
+xy_lim = 5e8;		%lim in xy plane
 z_lim = 1e8;		%lim in z coord
 
 % colours of objects, rgb
@@ -111,7 +111,7 @@ col = [	"g"		     %green
 		"#EDB120"    %ochre
 		"#D95319"];  %orange, not visible due to Sun orbit dimensions
 
-col_bkgnd	= [0.3,	0.3,	0.3];		% Background
+col_bkgnd	= [0,	0,	0];		% Background
 col_grid	= [255,	255, 255]	/255;	% Grid
 col_sun		= [255, 204, 0]		/255;	% Sun
 col_earth	= col(3);	%[0,	102, 204]	/255;	% Earth

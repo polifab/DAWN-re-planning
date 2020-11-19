@@ -97,8 +97,6 @@ radii = [2439.7
 
 %% intl orbits (only needed ones)
 
-
-
 %mars-vesta intl orbit
 [body_pos21, sp_todawn, body_posf21, sp_vf21, tof21, orb_elem21] = ...
                 gen_orbit(4,10,[2009 2 17 0 0 0],[2011 7 16 0 0 0],1);
@@ -112,8 +110,6 @@ MV_orbit = [MD_orbit;DV_orbit];
 [body_pos3, sp_v3, body_posf3, sp_vf3, tof3, orb_elem3] = ...
                 gen_orbit(10,11,[2012 9 5 0 0 0],[2015 3 5 0 0 0],0);
 VC_orbit = intpl_orbit(tof3,Vesta_r3,sp_v3);
-
-
 
 %% Earth Close by
 
@@ -129,47 +125,100 @@ Earth_esc = escape_hyp(3,EM_orbit(1:2,1:3),[2007 9 27 0 0 0],...
                   Earth_esc(1,1:3), [2007,9,1,0,0,0], [2007,9,27,0,0,0]);
 
 			  
-% catting sp points			  
-
+% stacking		  
 spcr_E = [];
 spcr_E = cat(1, spcr_E, park_E0);
 spcr_E = cat(1, spcr_E, Earth_esc);
 
-% time vector
-days_Earth = ymd_gen([2007,9,1], [2007,9,27]);
+%--------------------------------------------------------------------------
+% time vector and stacking
+
+% days_Earth = ymd_gen([2007,9,1], [2007,9,27]);
+days_Earth = ymd_gen([2007,9,1], [2008,9,27]);
+% increased number of days around the earth to include the time for escape hyp. 
+
+% creating more time samples
+% best fit (least square error) poly order 1
+poly_tE = polyfit(1:size(t_E0,1), t_E0, 1);
+t_esc_E = polyval(poly_tE, (size(t_E0,1)+1):size(spcr_E,1) )';
+
+
+% stacking
+time_seconds_E = [];
+time_seconds_E = cat(1, time_seconds_E, t_E0);
+time_seconds_E = cat(1, time_seconds_E, t_esc_E);
 
 %% Mars fly by
 
+% to do
+
 %spcr_M = ;
+%time_seconds_M
+%days_Mars
 
 %% Vesta close by
 
-
-
+%{
+% BY Simone
 % arrival
 Vesta_cap = capture_hyp(10,MV_orbit(end-1:end,1:3),[2011 7 16 0 0 0],...
                         Vesta_hamo,orb_elem22,sp_fromdawn);
 
 [park_V2,t_V2] = park_in(10, Vesta_r2, Vesta_hamo, orb_elem22,...
                 Vesta_cap(end,1:3), [2011,7,16,0,0,0], [2011,8,1,0,0,0]);
-
-
-r1 = (1.0e+08 * [ 1.964218321663772  -2.676871375732791  -0.158842884222893]);
-r2 = (1.0e+08 * [ 1.964225414871708  -2.676859686053302  -0.158844026563676]);
-tf = 12000;
-grade = 'pro';
-[orb_change_park, t_change_park, deltav_park] = cambio_orbita_park(Vesta_r2, r1, r2, tf, grade);
-
 % departure
 Vesta_esc = escape_hyp(10,VC_orbit(1:2,1:3),[2012 9 5 0 0 0],...
                                         Vesta_lamo, orb_elem3,sp_vf3);
-
 [park_V3,t_V3] = park_out(10, Vesta_r3, Vesta_lamo, orb_elem3,...
                   Vesta_esc(1,1:3), [2012,9,4,22,0,0], [2012,10,5,0,0,0]);
 
-% reduce hyperbola capture and exit dimension
-Vesta_cap(1:(end-1e3),:) = [];
-Vesta_esc(1e3:end,:) = [];
+%}
+%%%BY ME
+% arrival
+Vesta_cap = capture_hyp(10,MV_orbit(end-1:end,1:3),[2011 7 16 0 0 0],...
+                        Vesta_hamo,orb_elem22,sp_fromdawn);
+
+[park_V2,t_V2] = park_in(10, Vesta_r2, Vesta_hamo, orb_elem22,...
+                Vesta_cap(end,1:3), [2011,7,16,0,0,0], [2012,2,4,22,0,0]);
+% departure
+Vesta_esc = escape_hyp(10,VC_orbit(1:2,1:3),[2012 9 5 0 0 0],...
+                                        Vesta_lamo, orb_elem3,sp_vf3);
+[park_V3,t_V3] = park_out(10, Vesta_r3, Vesta_lamo, orb_elem3,...
+                  Vesta_esc(1,1:3), [2012,2,4,22,0,0], [2012,10,5,0,0,0]);
+%%%
+
+%--------------------------------------------------------------------------
+% change parking orbit
+r1 = (1.0e+08 * [ 1.964218321663772  -2.676871375732791  -0.158842884222893]);
+r2 = (1.0e+08 * [ 1.964225414871708  -2.676859686053302  -0.158844026563676]);
+tf = 12000;
+
+% change park orbit adjustment
+temporary = zeros(size(park_V2,1),1);
+for i = 1:size(park_V2,1)
+	temporary(i) = norm(park_V2(i,:) - r1,2);
+end
+index_last = find(temporary-mink(temporary,1) < 1e-5, 1, 'last');
+%removing the samples after the start of changing orbit
+park_V2(index_last+1:end,:) = [];
+
+temporary = zeros(size(park_V3,1),1);
+for i = 1:size(park_V3,1)
+	temporary(i) = norm(park_V3(i,:)-Vesta_r3 + Vesta_r2 - r2,2);
+end
+index_first = find(temporary-mink(temporary,1) < 1e-5, 1, 'first');
+
+%removing the samples before the end point of changing orbit
+park_V3(1:index_first,:) = [];
+
+grade = 'pro';
+[orb_change_park, t_change_park, deltav_park] = ...
+                        park_orbit_change(10, Vesta_r2, r1, r2, tf, grade);
+
+% reduce hyperbola capture and exit dimensions
+des_length = 500;	% desired length of hyperbolae
+Vesta_cap(1:(end-des_length),:) = [];
+Vesta_esc(des_length:end,:) = [];
 
 % stacking
 spcr_V = [];
@@ -179,13 +228,65 @@ spcr_V = cat(1, spcr_V, orb_change_park		-Vesta_r2);
 spcr_V = cat(1, spcr_V, park_V3				-Vesta_r3);
 spcr_V = cat(1, spcr_V, Vesta_esc			-Vesta_r3);
 
+%--------------------------------------------------------------------------
+% time vector and stacking
+
+% best fit (least square error) poly order 1
+poly_tV_cap = polyfit(1:size(t_V2,1), t_V2, 1);
+t_V_cap_noshift = polyval(poly_tV_cap, - size(Vesta_cap,1):0 )';
+t_V_cap = t_V_cap_noshift + abs(t_V_cap_noshift(1));
+
+poly_tV_esc = polyfit(1:size(t_V3,1), t_V3, 1);
+t_V_esc = polyval(poly_tV_esc, (size(t_V3,1)+1):(size(t_V3,1) + size(Vesta_esc,1)) )';
+
+% final stacking
+time_seconds_V = [];
+time_seconds_V = cat(1, time_seconds_V, t_V_cap);
+time_seconds_V = cat(1, time_seconds_V, t_V_cap(end)	+ t_V2);
+time_seconds_V = cat(1, time_seconds_V, t_V_cap(end)	+ t_V2(end)		+ t_change_park);
+time_seconds_V = cat(1, time_seconds_V, t_V_cap(end)	+ t_V2(end)		+ t_change_park(end)	+ t_V3);
+time_seconds_V = cat(1, time_seconds_V, t_V_cap(end)	+ t_V2(end)		+ t_change_park(end)	+ t_V_esc);
+
+% ndays_cap_hyp  =  abs(mink(floor(t_V_cap_noshift/24/3600),1));
+% so days_vector should start 4 days before ceres arrival ([2011 7 16).
+% length(ymd_gen([2011 7 13], [2011 7 16]))
+days_Vesta = ymd_gen([2011 7 13], [2013 7 16]);
+% increased number of days after the departure ([2012,10,5])to generate more than enough
+% days.
+
 %% Ceres close by
 
-% stacking
-% spcr_C = [];
-% spcr_C = cat(1, spcr_C, hyperbola_C);
-% spcr_C = cat(1, spcr_C, orbit_C);
+Ceres_cap = capture_hyp(11,VC_orbit(end-1:end,1:3),[2015 3 5 0 0 0],...
+                    Ceres_hamo,orb_elem3,sp_vf3);
+                
+[park_C4,t_C4] = park_in(11, Ceres_r4, Ceres_hamo, orb_elem3,...
+                Ceres_cap(end,1:3), [2015,3,5,0,0,0], [2015,4,1,0,0,0]);
 
+%stacking
+spcr_C = [];
+spcr_C = cat(1, spcr_C, Ceres_cap - Ceres_r4);
+spcr_C = cat(1, spcr_C, park_C4 - Ceres_r4);
+
+%--------------------------------------------------------------------------
+% time vector and stacking
+
+% best fit (least square error) poly order 1
+poly_tC = polyfit(1:size(t_C4,1), t_C4, 1);
+t_cap_C_noshift = polyval(poly_tC, -size(Ceres_cap,1):0 )';
+% adding abs(t_cap_C_noshift(1)) to shift up correctly
+t_cap_C = t_cap_C_noshift + abs(t_cap_C_noshift(1));
+
+% final stacking
+time_seconds_C = [];
+time_seconds_C = cat(1, time_seconds_C, t_cap_C);
+time_seconds_C = cat(1, time_seconds_C, t_C4 + abs(t_cap_C(1)) );
+
+% ndays_cap_hyp  =  abs(mink(floor(t_cap_C_noshift/24/3600),1));
+% so days_vector should start 19 days before ceres arrival ([2015,3,5]).
+% length(ymd_gen([2015,2,15], [2015,3,5]))
+days_Ceres = ymd_gen([2015,2,15], [2016,3,15]);
+% increased number of days after the arrival to generate more than enough
+% days.
 
 %% Animations Parameters
 % view angles
@@ -216,7 +317,7 @@ col = [	"g"		     %green
 		"#EDB120"    %ochre
 		"#D95319"];  %orange, not visible due to Sun orbit dimensions
 
-col_bkgnd	= [0.3,	0.3,	0.3];		% Background
+col_bkgnd	= [0,	0,	0];		% Background
 col_grid	= [255,	255, 255]	/255;	% Grid
 col_sun		= [255, 204, 0]		/255;	% Sun
 col_earth	= col(3);	%[0,	102, 204]	/255;	% Earth
@@ -234,8 +335,8 @@ width_spcr  = 1;
 dim_dawn = [1.64 19.7 1.77];
 scale_stl = dim_dawn(2)/120;
 scale_dawn = 100;
-col_dawn_face = [0,0,0]./255;
-col_dawn_edge = [100,100,100]./255;
+col_dawn_face = [50,50,50]./255;
+col_dawn_edge = [130,130,130]./255;
 
 %% Movie parameters
 
