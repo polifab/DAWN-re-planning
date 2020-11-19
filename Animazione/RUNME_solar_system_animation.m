@@ -33,8 +33,9 @@ plot_orbit2(4,	time_vector(1,1), planet_linewidth)		%Mars
 plot_orbit2(10, time_vector(end,1), planet_linewidth)	%Vesta
 plot_orbit2(11, time_vector(end,1), planet_linewidth)	%Ceres
 
-
-for d = 1:fr_skip:n_days
+for d = 1:3:n_days
+% for d = 1:fr_skip:n_days
+% for d = (n_days-10):fr_skip:n_days
 	%----------------------------------------------------------------------
 	%reset figure
 	if d ~= 1
@@ -64,6 +65,13 @@ for d = 1:fr_skip:n_days
 	%Vesta (id = 10)
 	[~, Vesta_now, ~, ~] = planet_elements_and_sv(10, ...
 								year_now, month_now, day_now, 0, 0, 0);
+	
+	% dirty trick for reaching ceres in the animation.
+	early = floor(33 * d/n_days);
+	year_now	= time_vector(d-early,1);
+	month_now	= time_vector(d-early,2);
+	day_now		= time_vector(d-early,3);
+	
 	%Ceres (id = 11)
 	[~, Ceres_now, ~, ~] = planet_elements_and_sv(11, ...
 								year_now, month_now, day_now, 0, 0, 0);
@@ -120,18 +128,18 @@ for d = 1:fr_skip:n_days
 	
 	
 	if d <= day_mars
-		status_msg = ['Left Earth'];
+		status_msg = ['Left Earth! To Mars...'];
 	elseif d <= day_vesta 
-		status_msg = ['Mars Flyby'];
+		status_msg = ['Mars Flyby done! To Vesta...'];
 	elseif d <= day_left_vesta
-		status_msg = ['Park-orbit Vesta'];
+		status_msg = ['Park-orbit Vesta.'];
 	elseif d < day_ceres
-		status_msg = ['Left Vesta'];
+		status_msg = ['Left Vesta! To Ceres...'];
 	else 
-		status_msg = ['Ceres Reached'];
+		status_msg = ['Ceres Reached.'];
 	end
 	
-	Title = ['Last msg:' status_msg '.   '  datestr(date), ' (day ', num2str(d), ' of ', num2str(n_days), ').'];
+	Title = [status_msg '   '  datestr(date), ' (day ', num2str(d), ' of ', num2str(n_days), ').'];
 	title(Title)
 	
 	% end stuff	

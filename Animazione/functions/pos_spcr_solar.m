@@ -17,7 +17,6 @@ EM_orbit = intpl_orbit2(tof1, Earth_r0, sp_v1);
 em_pos = EM_orbit(:,1:3);
 
 q = floor(size(em_pos,1)/em_days); % rate of samples for each day
-% UHM UHM UHM UHM CHECKCHECK
 for i = 1:em_days
 	pos_spcr(i,:) = em_pos(q * i,:);
 end
