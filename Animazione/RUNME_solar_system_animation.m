@@ -27,7 +27,6 @@ ax.GridColor = col_grid;
 hold on
 
 % Orbits (NOT ACCURATE, SHOULD BE UPDATED EACH YEAR) 
-% TEMPORARY
 plot_orbit2(3,	time_vector(1,1), planet_linewidth)		%Earth
 plot_orbit2(4,	time_vector(1,1), planet_linewidth)		%Mars
 plot_orbit2(10, time_vector(end,1), planet_linewidth)	%Vesta

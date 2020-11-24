@@ -3,9 +3,9 @@
 % The animations works by plotting the position of the spacecraft and the 
 % "close" planet and displaying the current day.
 
-% Attention, this script requires:
-% 1. "M-Files for Orbital Mechanics for  Engineering Students, 3e" folder in Matlab-path
-% 2. "lavoro vollaro" folder in Matlab-path
+% This script requires the following folders in Matlab-Path:
+% 1. "M-Files for Orbital Mechanics for  Engineering Students, 3e"
+% 2. "lavoro vollaro" 
 
 %% TO DO list
 %{
@@ -15,7 +15,7 @@ Close by Mars
 %}
 
 %% intro & editable parameters
-clc; clear;
+clc; clear; close all;
 
 % addpath
 addpath('functions');	
@@ -27,14 +27,18 @@ animation_close_by_init;		% init all par, constants, plot parameters
 clc;
 close all;
 
-% Editable
+%% Editable
+
+time_pause = 0;		% time [s] after each drawing. Set to zero to avoid pausing
+fr_skip = 100 +1;		% frame skip between each drawing
+
 movie_mode		= -1;	%  1	for movie writing
 						%  2	for writing HD movie
 						%  0	for only matlab animation
 						% -1	for fullscreen animation
 						
-initial_spin	= 1;	% 1 for initial inspection of spacecraft, 0 otherwise
-only_closeby	= 1;	% case option to animate only a specified close by.
+initial_spin	= 0;	% 1 for initial inspection of spacecraft, 0 otherwise
+only_closeby	= 0;	% case option to animate only a specified close by.
 						%		0		all
 						%		1		Earth
 						%		2		Mars
@@ -94,8 +98,14 @@ n = size(y,1)-200;
 k = 1;
 hold on
 for i = 1:fr_skip:n
-% for i = 1:100:n
+% for i = 1:100:n																		% more speeeed
+% for i =(size(park_E0,1)+size(park_E1,1)-50):5:(size(park_E0,1)+size(park_E1,1)+100)   % last day on Earth
+% for i = (size(park_E0,1)-50):1:(size(park_E0,1)+50)									% change park orbit
 	
+	if exist('traj_sofar','var')
+		delete(traj_sofar)
+	end
+
 	% initial inspection of dawn spacecraft
 	if i == 1 && initial_spin
 		
@@ -193,7 +203,7 @@ for i = 1:fr_skip:n
 	
 	
 	% trajectory "so far" of spacecraft
-	traj =	plot3(  y(1:i,1), y(1:i,2),y(1:i,3),...
+	traj_sofar =	plot3(  y(1:i,1), y(1:i,2),y(1:i,3),...
             'color', col_spcr, 'LineWidth', width_spcr);
 	
 		
@@ -205,7 +215,7 @@ for i = 1:fr_skip:n
 	
 	date = datetime(days_Earth(nday,:));
 	Title = ['Earth Close Up. ' datestr(date) ', (day ' num2str(nday), ...
-			' of ', num2str(floor(time_seconds_E(end)/24/60/60)), ').'];
+			' of ', num2str(floor(time_seconds_E(end)/24/60/60)+1), ').'];
 	title(Title)
 	
 	% axis lims
@@ -266,8 +276,151 @@ end
 
 %% Mars FlyBy
 if only_closeby == 2 || only_closeby == 0
+clc
+disp('Mars Close by animation started!')
 
-	% to do
+figh = figure(1);
+clf
+if movie_mode == 2 || movie_mode == -1
+	if movie_mode == 2
+		warning('Note that a 1080p resolution is needed for movie_mode = 2')
+	end
+	figh.WindowState = 'maximize';
+end
+% figure settings
+lighting phong;
+set(gcf, 'Renderer', 'zbuffer');
+set(gca, 'color', col_bkgnd)
+ax = gca;
+ax.GridColor = col_grid; 
+axis equal
+% axis tight
+hold on
+xlabel('X [km]')
+ylabel('Y [km]')
+zlabel('Z [km]')
+grid on
+
+% Edit inputs to iterations
+y = spcr_M;				% positions of spacecraft
+id_planet = 4;
+scale_dawn = 50;					% to edit!
+
+% init positions
+pos_planet = [0;0;0];
+pos_dawn_init = y(1,:)';			% column vector of the initial dawn position
+body_sphere(id_planet, pos_planet);
+
+% init dawn model
+stl_offset = [0; 0; 0];
+p_dawn = patch(stlread('Dawn_19.stl'));							% EDITARE
+T_dawn = hgmat(eye(3)*scale_stl* scale_dawn, pos_dawn_init);	% EDITARE
+t_dawn = hgtransform('Parent',gca);
+set(t_dawn,'Matrix',T_dawn);
+set(p_dawn,'Parent',t_dawn);
+set(p_dawn, 'facec', col_dawn_face);            % Set the face colour
+set(p_dawn, 'EdgeColor', col_dawn_edge);		% Set the edge colour
+
+% Mars orbit
+orb_M = orbit(id_planet, 2007) -  Mars_r1;
+orb_index = find(row_norm2(orb_M)-mink(row_norm2(orb_M),1)==0,1,'first');
+orb_M = orb_M -  orb_M(orb_index,:); % adjustment so orbit is passing trough Mars at [0,0,0]
+plot3(orb_M(:,1),orb_M(:,2),orb_M(:,3),'--', 'color', col(id_planet))
+
+
+
+% iterations
+n = size(y,1);
+k = 1;
+hold on
+
+
+for i = 1:fr_skip:n
+% for i = 1:floor(n/500):n	
+	
+	
+	if exist('traj_sofar','var')
+		delete(traj_sofar)
+	end
+	
+	%----------------------------------------------------------------------
+	% dawn update
+	pos_now = y(i,:);
+	T_dawn_now = hgmat(eye(3)*scale_stl*scale_dawn, pos_now');
+	set(t_dawn,'Matrix',T_dawn_now);
+	
+	
+	% trajectory "so far" of spacecraft
+	traj_sofar =	plot3(  y(1:i,1), y(1:i,2),y(1:i,3),...
+            'color', col_spcr, 'LineWidth', width_spcr);
+	
+		
+	%----------------------------------------------------------------------
+	% end stuff	
+	% Title = ['Earth Close Up (frame ', num2str(i), ' of ', num2str(n), ')'];
+	
+	nday = floor(time_seconds_M(i)/24/60/60)+1;
+	
+	date = datetime(days_Mars(nday,:));
+	Title = ['Mars Close Up. ' datestr(date) ', (day ' num2str(nday), ...
+			' of ', num2str(floor(time_seconds_M(end)/24/60/60)), ').'];
+	title(Title)
+	
+	% axis lims
+	minx = min(min(y(1:i,1))-lim_gap , -radii(id_planet)-lim_gap);
+	maxx = max(max(y(1:i,1))+lim_gap , +radii(id_planet)+lim_gap);
+	xlim(scale_lims*[minx, maxx]);
+	
+	miny = min(min(y(1:i,2))-lim_gap , -radii(id_planet)-lim_gap);
+	maxy = max(max(y(1:i,2))+lim_gap , +radii(id_planet)+lim_gap);
+	ylim(scale_lims*[miny, maxy]);
+	
+% 	minz = min(min(y(1:i,3))-lim_gap, -radii(id_planet)-lim_gap);
+	
+	minz = min([min(y(1:i,3))-lim_gap, -radii(id_planet)-lim_gap, min(orb_M(orb_index-1:orb_index+1,3))]);
+	maxz = max(max(y(1:i,3))+lim_gap, +radii(id_planet)+lim_gap);
+	zlim(scale_lims*[minz, maxz]);
+	
+	
+	if spinlon == 0 && spinlat == 0
+		if i == 1
+			view(View(1, 1), View(1, 2));
+		end
+	else
+		view(View(1, 1) + spinlon * i/n, View(1, 2) + spinlat* i/n);
+	end
+	
+	
+	if time_pause ~= 0
+		pause(time_pause)
+	end
+	
+	drawnow
+	%----------------------------------------------------------------------
+	% write video
+	if movie_mode == 1 || movie_mode == 2
+		if movie_mode == 1
+			movieVector(k) = getframe(figh);
+		elseif movie_mode == 2
+			movieVector(k) = getframe(figh, [10,10,1910,960]);
+		end		
+		k = k+1;
+	end
+	
+end
+
+%--------------------------------------------------------------------------
+% Video stuff
+if movie_mode == 1 || movie_mode == 2
+	movie = VideoWriter('movie_Marscloseby', 'MPEG-4');
+	movie.FrameRate = movie_fps;
+
+	open(movie);
+	writeVideo(movie, movieVector);
+	close(movie);
+	disp('Mars Close by movie saved!')
+
+end
 
 end
 
@@ -326,8 +479,8 @@ hold on
 for i = 1:fr_skip:n
 % for i = 27450:fr_skip:n							% to get change of orbit
 % for i = (n - size(Vesta_esc,1)-100):fr_skip:n		% to get the exit
-	if i ~= 1
-		delete(traj)
+	if exist('traj_sofar','var')
+		delete(traj_sofar)
 	end
 			
 	%----------------------------------------------------------------------
@@ -338,8 +491,8 @@ for i = 1:fr_skip:n
 	
 	
 	% trajectory "so far" of spacecraft
-	traj =	plot3(  y(1:i,1), y(1:i,2),y(1:i,3),...
-            'color', col_spcr, 'LineWidth', width_spcr);
+	traj_sofar =	plot3(  y(1:i,1), y(1:i,2),y(1:i,3),...
+						'color', col_spcr, 'LineWidth', width_spcr);
 	
 		
 	%----------------------------------------------------------------------
@@ -552,10 +705,10 @@ set(p_dawn, 'EdgeColor', col_dawn_edge);		% Set the edge colour
 n = size(y,1);
 k = 1;
 hold on
-% for i = 1:fr_skip:n
-for i = 1:3:n
-	if i ~= 1
-		delete(traj)
+for i = 1:fr_skip:n
+% for i = 1:3:n
+	if exist('traj_sofar','var')
+		delete(traj_sofar)
 	end
 			
 	%----------------------------------------------------------------------
@@ -566,7 +719,7 @@ for i = 1:3:n
 	
 	
 	% trajectory "so far" of spacecraft
-	traj =	plot3(  y(1:i,1), y(1:i,2),y(1:i,3),...
+	traj_sofar =	plot3(  y(1:i,1), y(1:i,2),y(1:i,3),...
             'color', col_spcr, 'LineWidth', width_spcr);
 	
 	%----------------------------------------------------------------------

@@ -45,7 +45,10 @@ function body_sphere(obj_id,obj_pos)
     img = imread(body(obj_id));
 
 	%img = imrotate(img,180);
-	tform = affine2d([1 0 0; 0 -1 0; 0 0 1]);
+% 	tform = affine2d([1 0 0; 0 -1 0; 0 0 1]);
+	tform = affine3d(...
+			[[1 0 0; 0 -1 0; 0 0 1], [0 0 0]'; 0 0 0 1] );
+		
 	img = imwarp(img,tform);
 	
     set(sp_hand,'facecolor','texture',...
