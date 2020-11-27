@@ -1,4 +1,4 @@
-function [flyby_parameters] = flyby(planet_id,delta_ip,altitude,flag,year,month,day,hour,minute,second,alpha_x,beta_y,gamma_z)
+function [flyby_parameters pos] = flyby(planet_id,delta_ip,altitude,flag,year,month,day,hour,minute,second,alpha_x,beta_y,gamma_z)
 global mu
 %example id_planet = 4; delta_ip = 38; altitude = 512; flag = 1; year = 2009
 %        month = 02, day = 17, hour = 12, minute = 00, second = 00 alpha_x
@@ -180,5 +180,6 @@ hold off;
     
     % Output vector
     flyby_parameters = [planet(3) planet(1) planet(2) altitude theta_inf beta delta e a b];
+    pos = G1;
     
 end

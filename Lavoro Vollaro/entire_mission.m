@@ -320,7 +320,7 @@ plot3(Mtrack(1:2,1),Mtrack(1:2,2),Mtrack(1:2,3),'k')
 plot3(Etrack(3:4,1),Etrack(3:4,2),Etrack(3:4,3),'k')
 
 % flyby(planet_id,theta_inf,altitude,flag,year,month,day,hour,minute,second)
-[par,fly] = flyby(4,91,512,1,2009,02,17,0,0,0);
+[par,fly] = flyby(4,91,512,1,2009,02,17,0,0,0,0,0,0);
 plot3(fly(:,1), fly(:,2),fly(:,3),'g-')
 
 %% Mars SOI close-up
