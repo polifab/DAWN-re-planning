@@ -252,7 +252,8 @@ hold on
 [park_E0,t_E0] = park_out(3, Earth_r0, Epark_radius, orb_elem1,...
                   Earth_esc(1,1:3), [2007,9,1,0,0,0], [2007,9,27,0,0,0]);
 
-[~, ~, delta_change(1)] = change_of_plane(Epark_inclination, orb_elem1(4), orb_elem1(3), orb_elem1(3), sqrt((masses(3)*G)/(Epark_radius));
+[~, ~, delta_change(1)] = ...
+    change_of_plane(Epark_inclination, orb_elem1(4), orb_elem1(3), orb_elem1(3), sqrt((masses(3)*G)/(Epark_radius)));
 
  
 % park_orbit(3,Earth_r0,Epark_radius,Epark_inclination,orb_elem1(3));
@@ -407,7 +408,7 @@ tf = 12000;
 grade = 'pro';
 [orb_change_park, t_change_park, delta_v(3)] = ...
                         park_orbit_change(10, Vesta_r2, r1, r2, tf, grade);
-[~, ~, delta_change(3)] = change_of_plane(orb_elem22(4), orb_elem3(4), orb_elem22(3), orb_elem3(3), sqrt((masses(11)*G)/(Vesta_hamo));
+[~, ~, delta_change(3)] = change_of_plane(orb_elem22(4), orb_elem3(4), orb_elem22(3), orb_elem3(3), sqrt((masses(11)*G)/(Vesta_hamo)));
 
 %           DEBUG
 % Vtrack = [[MV_orbit(1,1);MV_orbit(2,1)] ...
